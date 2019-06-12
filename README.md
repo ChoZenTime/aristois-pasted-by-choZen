@@ -20,6 +20,10 @@ Full project files for **aristois**, Counter-Strike: Global Offensive cheat base
 
 + tested/added nullptr for bt chams
 
+++ please make/use new configs so it dosen´t crash etc on you
+
++++ for weapon icon esp you need font --> astriumwep.ttf
+
 
 ## FAQ
 ### Where's the DLL file?
