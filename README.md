@@ -1,15 +1,15 @@
 
 # aristois-pasted-by-choZen   
-# thx too kuciak666 for aristois
+##  thx too kuciak666 for aristois
 
 Full project files for **aristois**, Counter-Strike: Global Offensive cheat based on [alpha's sdk](https://github.com/alphauc/sdk).
 
 ## Changelog
-+ completted skinlist						// thx brain.exe
++ completted skinlist						
 + added knifeanimation fixed				// thx shonax paste
 + added glovechanger						// thx nskinz 
 + added nade pediction						// thx deadcell
-+ added nade glow							// thx brain.exe
++ added nade glow							
 + added flags is defusing, callout			// thx frosty v2
 + added removals frog						// thx antario paste
 + added better weapon esp with names/icons  // pasted from my old indigo that i released on pasters.cc 
