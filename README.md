@@ -12,7 +12,7 @@ Full project files for **aristois**, Counter-Strike: Global Offensive cheat base
 + added nade glow
 + added defuse esp
 + added flags is defusing, callout			// thx frosty v2
-+ added removals frog						// thx antario paste
++ added removals fog						// thx antario paste
 + added better weapon esp with names/icons  // pasted from my old indigo that i released on pasters.cc 
 + added ambient light						// thx smefs indigo 
 + added weapon/hand/sleeve chams			// thx tonti spuri
