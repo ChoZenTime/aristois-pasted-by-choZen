@@ -14,7 +14,7 @@ Full project files for **aristois**, Counter-Strike: Global Offensive cheat base
 + added removals frog						// thx antario paste
 + added better weapon esp with names/icons  // pasted from my old indigo that i released on pasters.cc 
 + added ambient light						// thx smefs indigo 
-+ added weapon/hande/sleeve chams			// thx tonti spuri
++ added weapon/hand/sleeve chams			// thx tonti spuri
 + added trigger/damage inticator			// thx tonti spuri
 
 + tested/added nullptr for bt chams
