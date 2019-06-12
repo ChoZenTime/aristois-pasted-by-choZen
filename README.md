@@ -9,7 +9,8 @@ Full project files for **aristois**, Counter-Strike: Global Offensive cheat base
 + added knifeanimation fix				// thx shonax paste
 + added glovechanger						// thx nskinz 
 + added nade pediction						// thx deadcell
-+ added nade glow							
++ added nade glow
++ added defuse esp
 + added flags is defusing, callout			// thx frosty v2
 + added removals frog						// thx antario paste
 + added better weapon esp with names/icons  // pasted from my old indigo that i released on pasters.cc 
