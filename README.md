@@ -34,8 +34,8 @@ Press `INSERT` key.
 Press `END` key.
 
 ## Media
-![image](https://gyazo.com/a67291b9696308b6a9188e2a793d47e7.png)
-![image](https://gyazo.com/ba5a5904463364a2859c4837c3269a3a.png)
-![image](https://gyazo.com/157acf8f9f6dd9274bbd86177089db34.png)
+![image](https://imgur.com/X5vQfY2.png)
+![image](https://imgur.com/Yhqxk4z.png)
+![image](https://imgur.com/W3sz6rE.png)
 
   
