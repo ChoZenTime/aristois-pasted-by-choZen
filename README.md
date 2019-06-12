@@ -5,8 +5,8 @@
 Full project files for **aristois**, Counter-Strike: Global Offensive cheat based on [alpha's sdk](https://github.com/alphauc/sdk).
 
 ## Changelog
-+ completted skinlist						
-+ added knifeanimation fixed				// thx shonax paste
++ completed skinlist						
++ added knifeanimation fix				// thx shonax paste
 + added glovechanger						// thx nskinz 
 + added nade pediction						// thx deadcell
 + added nade glow							
