@@ -250,6 +250,8 @@ void c_aimbot::auto_pistol(c_usercmd* user_cmd) {
 }
 
 void c_aimbot::rcs_standalone(c_usercmd* user_cmd) noexcept {
+	if (!config_system.item.rcs_standalone)
+		return;
 
 	auto local_player = reinterpret_cast<player_t*>(interfaces::entity_list->get_client_entity(interfaces::engine->get_local_player()));
 	if (!local_player)
