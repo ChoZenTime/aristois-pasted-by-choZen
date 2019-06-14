@@ -18,8 +18,7 @@ public:
 	void run(c_usercmd*) noexcept;
 	void event_player_death(i_game_event* event) noexcept;
 	void auto_pistol(c_usercmd* user_cmd);
-	void rcs_standalone() noexcept;
-	void triggerbot(c_usercmd* user_cmd, weapon_t* weapon);
+	void rcs_standalone(c_usercmd* user_cmd) noexcept;
 	bool is_pistol(void* weapon) {
 		if (!weapon)
 			return false;

@@ -249,18 +249,25 @@ void c_aimbot::auto_pistol(c_usercmd* user_cmd) {
 	}
 }
 
-void c_aimbot::rcs_standalone() noexcept
-{
-	if (!config_system.item.rcs_standalone)
-	{
-		int rcsamount = 2;
+void c_aimbot::rcs_standalone(c_usercmd* user_cmd) noexcept {
+
+	auto local_player = reinterpret_cast<player_t*>(interfaces::entity_list->get_client_entity(interfaces::engine->get_local_player()));
+	if (!local_player)
 		return;
-	}
 
-	int rcsamount = 2 - (config_system.item.rcs_standalone_x);
+	static vec3_t old_punch = { 0.0f, 0.0f, 0.0f };
+	auto aim_punch = local_player->aim_punch_angle() * 2;
 
-	auto recoil_scale = interfaces::console->get_convar("weapon_recoil_scale");
-	recoil_scale->set_value(rcsamount);
+	rcs_x = config_system.item.rcs_standalone_x;
+	rcs_y = config_system.item.rcs_standalone_y;
+
+	aim_punch.x *= rcs_x;
+	aim_punch.y *= rcs_y;
+
+	auto rcs = user_cmd->viewangles - (aim_punch - old_punch);
+	interfaces::engine->set_view_angles(rcs);
+
+	old_punch = aim_punch;
 }
 
 void c_aimbot::run(c_usercmd* user_cmd) noexcept {

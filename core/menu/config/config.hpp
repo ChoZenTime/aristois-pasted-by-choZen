@@ -241,6 +241,7 @@ public:
 		int aimbot_delay_after_kill{ 0 };
 		bool aimbot_auto_pistol{ false };
 		float rcs_standalone_x { 0.0f };
+		float rcs_standalone_y { 0.0f };
 		bool rcs_standalone{ false };
 		bool trigger_enable{ false };
 		bool trigger_hitbox_head{ false };

@@ -159,7 +159,9 @@ void c_menu::run() {
 					ImGui::Checkbox("standalone rcs", &config_system.item.rcs_standalone);
 					if (config_system.item.rcs_standalone) {
 						ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 10);
-						ImGui::SliderFloat("rcs amount", &config_system.item.rcs_standalone_x, 0.0f, 2.0f, "%.2f");
+						ImGui::SliderFloat("rcs amount x", &config_system.item.rcs_standalone_x, 0.0f, 1.0f, "%.2f");
+						ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 10);
+						ImGui::SliderFloat("rcs amount y", &config_system.item.rcs_standalone_y, 0.0f, 1.0f, "%.2f");
 						ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 10);
 					}
 					ImGui::Checkbox("triggerbot", &config_system.item.trigger_enable);
@@ -180,9 +182,9 @@ void c_menu::run() {
 							ImGui::EndCombo();
 							ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 10);
 						}
-						ImGui::SliderInt("delay", &config_system.item.trigger_delay, 0, 20);
+						ImGui::SliderInt("trigger delay", &config_system.item.trigger_delay, 0, 20);
 						ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 10);
-						ImGui::Checkbox("recoil", &config_system.item.trigger_recoil);
+						ImGui::Checkbox("trigger recoil", &config_system.item.trigger_recoil);
 						ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 10);
 					}
 					ImGui::PopStyleColor();
