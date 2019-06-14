@@ -282,7 +282,7 @@ void c_aimbot::run(c_usercmd* user_cmd) noexcept {
 	auto weapon = local_player->active_weapon();
 	weapon_settings(weapon);
 	auto_pistol(user_cmd);
-	rcs_standalone();
+	rcs_standalone(user_cmd);
 	
 	if (config_system.item.aim_enabled && user_cmd->buttons & in_attack || GetAsyncKeyState(config_system.item.aim_key)) {
 		if (auto target = find_target(user_cmd)) {
