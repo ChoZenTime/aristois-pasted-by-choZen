@@ -1,8 +1,6 @@
-#include <cmath>
 #include "trigger_simple.hpp"
-#include "../../../source-sdk/sdk.hpp"
-#include "../../../source-sdk/math/vector2d.hpp"
 #include "../../../dependencies/common_includes.hpp"
+
 #define _USE_MATH_DEFINES
 #define	HITGROUP_GENERIC	0
 #define	HITGROUP_HEAD		1
@@ -28,11 +26,10 @@ void c_trigger::trigger(c_usercmd* user_cmd) {
 		return;
 
 	auto weapon = local_player->active_weapon();
-
 	if (!weapon || !weapon->clip1_count() || is_bomb(weapon) || is_knife(weapon) || is_grenade(weapon))
 		return;
 
-	vec3_t src, dst, forward;
+	vec3_t src, dst, forward, crosshair_forward;
 	trace_t tr;
 	ray_t ray;
 	trace_filter filter;
@@ -44,20 +41,16 @@ void c_trigger::trigger(c_usercmd* user_cmd) {
 	src = local_player->get_eye_pos();
 	dst = src + forward;
 	ray.initialize(src, dst);
-	interfaces::trace_ray->trace_ray(ray, 0x46004003, &filter, &tr);
 
-	vec3_t viewangles = user_cmd->viewangles;
+	interfaces::trace_ray->trace_ray(ray, MASK_SHOT, &filter, &tr);
+
 	if (config_system.item.trigger_recoil)
-		viewangles += local_player->aim_punch_angle() * 2.0f;
+		user_cmd->viewangles += local_player->aim_punch_angle() * 2.0f;
 
-	vec3_t crosshair_forward;
-	math.angle_vectors(viewangles, crosshair_forward);
+	math.angle_vectors(user_cmd->viewangles, crosshair_forward);
 	crosshair_forward *= 8000.f;
 
-
-	if (tr.DidHitWorld())
-		return;
-	if (!tr.DidHitNonWorldEntity())
+	if (tr.DidHitWorld() || !tr.DidHitNonWorldEntity())
 		return;
 
 	if (local_player->team() == tr.entity->team())

@@ -6,28 +6,18 @@
 c_visuals visuals;
 
 void c_visuals::run() noexcept {
+	if (!config_system.item.visuals_enabled || (config_system.item.anti_screenshot && interfaces::engine->is_taking_screenshot()))
+		return;
+
 	auto local_player = reinterpret_cast<player_t*>(interfaces::entity_list->get_client_entity(interfaces::engine->get_local_player()));
-
-	if (!config_system.item.visuals_enabled)
-		return;
-
-	if (config_system.item.anti_screenshot && interfaces::engine->is_taking_screenshot())
-		return;
-
 	if (!local_player)
 		return;
-
+	
 	//player drawing loop
 	for (int i = 1; i <= interfaces::globals->max_clients; i++) {
 		auto entity = reinterpret_cast<player_t*>(interfaces::entity_list->get_client_entity(i));
 
-		if (!entity)
-			continue;
-
-		if (entity == local_player)
-			continue;
-
-		if (entity->health() <= 0)
+		if (!entity || entity == local_player || entity->health() <= 0)
 			continue;
 
 		if (config_system.item.radar)
@@ -35,9 +25,10 @@ void c_visuals::run() noexcept {
 
 		if (entity->team() == local_player->team() && !config_system.item.visuals_team_check)
 			continue;
-
-		if (!local_player->can_see_player_pos(entity, entity->get_eye_pos()) && config_system.item.visuals_visible_only)
-			continue;
+		
+		if (local_player->is_alive())
+			if (!local_player->can_see_player_pos(entity, entity->get_eye_pos()) && config_system.item.visuals_visible_only)
+				continue;
 
 		if (config_system.item.visuals_on_key && !GetAsyncKeyState(config_system.item.visuals_key))
 			continue;
@@ -58,19 +49,23 @@ void c_visuals::run() noexcept {
 		skeleton(entity);
 		last_dormant[i] = entity->dormant();
 	}
-
+	
 	//non player drawing loop
 	for (int i = 0; i < interfaces::entity_list->get_highest_index(); i++) {
 		auto entity = reinterpret_cast<player_t*>(interfaces::entity_list->get_client_entity(i));
-
+		
 		if (entity && entity != local_player) {
 			auto client_class = entity->client_class();
 			auto model_name = interfaces::model_info->get_model_name(entity->model());
-
-			if (client_class->class_id == class_ids::cplantedc4) { //this should be fixed in better ways than this - designer
+		
+			if (client_class->class_id == class_ids::cplantedc4) { //this should be fixed in better ways than this - designer				
 				bomb_esp(entity);
-				bomb_defuse_esp(entity);
+				bomb_defuse_esp(entity);			
 			}
+			
+			if (local_player->is_alive())
+				if (!local_player->can_see_player_pos(entity, entity->get_eye_pos()) && config_system.item.visuals_visible_only)
+					continue;
 
 			entity_esp(entity);
 			dropped_weapons(entity);
@@ -80,33 +75,35 @@ void c_visuals::run() noexcept {
 }
 
 void c_visuals::entity_esp(player_t* entity) noexcept {
-	if (!config_system.item.entity_esp)
+	if (!config_system.item.entity_esp || !entity || entity->dormant())
 		return;
 
-	if (!entity)
+	auto model = entity->model();
+	if (!model)
 		return;
 
-	if (entity->dormant())
-		return;
+	if (model) {
+		vec3_t entity_position, entity_origin;
+		entity_origin = entity->origin();
+		auto client_class = entity->client_class();
+		auto model = interfaces::model_info->get_studio_model(entity->model());
+		if (!model)
+			return;
+		if (!math.world_to_screen(entity_origin, entity_position))
+			return;
 
-	auto model_name = interfaces::model_info->get_model_name(entity->model());
-	vec3_t entity_position, entity_origin;
-	entity_origin = entity->origin();
-	auto client_class = entity->client_class();
-
-	if (!math.world_to_screen(entity_origin, entity_position))
-		return;
-
-	if (client_class->class_id == class_ids::cchicken) {
-		render.draw_text(entity_position.x, entity_position.y, render.name_font, "chicken", true, color(255, 255, 255));
-	}
-
-	else if (strstr(model_name, "dust_soccer_ball001")) {
-		render.draw_text(entity_position.x, entity_position.y, render.name_font, "soccer ball", true, color(255, 255, 255));
-	}
-
-	else if (client_class->class_id == class_ids::chostage) {
-		render.draw_text(entity_position.x, entity_position.y, render.name_font, "hostage", true, color(255, 255, 255));
+		std::string name = model->name_char_array, drop_name;
+		
+		if (name.find("dust_soccer_ball001") != std::string::npos) {
+			drop_name = "soccer ball";
+		}
+		if (client_class->class_id == class_ids::cchicken) {
+			drop_name = "chicken";
+		}
+		else if (client_class->class_id == class_ids::chostage) {
+			drop_name = "hostage";
+		}
+		render.draw_text(entity_position.x, entity_position.y, render.name_font, drop_name.c_str() , true, color(255, 255, 255));
 	}
 }
 
@@ -179,7 +176,7 @@ void c_visuals::player_rendering(player_t* entity) noexcept {
 
 		if (config_system.item.player_flags_flashed && entity->is_flashed())
 			flags.push_back(std::pair<std::string, color>(std::string("flashed"), color(255, 255, 0, alpha[entity->index()])));
-		
+
 		if (config_system.item.player_flags_defuse && entity->is_defusing() && !entity->has_defuser())
 			flags.push_back(std::pair<std::string, color>(std::string("defusing"), color(0, 191, 255, alpha[entity->index()])));
 
@@ -187,7 +184,6 @@ void c_visuals::player_rendering(player_t* entity) noexcept {
 			flags.push_back(std::pair<std::string, color>(std::string("defusing"), color(122, 103, 238, alpha[entity->index()])));
 
 		if (config_system.item.player_flags_pos && entity->get_callout())
-			//flags.push_back(std::pair<std::string, color>(std::string(clean_item_name(posi)), color(0, 190, 90, alpha[entity->index()])));
 			flags.push_back(std::pair<std::string, color>(std::string(posi), color(0, 190, 90, alpha[entity->index()])));
 		
 		auto position = 0;
@@ -196,510 +192,229 @@ void c_visuals::player_rendering(player_t* entity) noexcept {
 			position += 10;
 		}
 	}
-	/*if (config_system.item.player_weapon) {
-auto red = config_system.item.clr_weapon[0] * 255;
-auto green = config_system.item.clr_weapon[1] * 255;
-auto blue = config_system.item.clr_weapon[2] * 255;
-auto weapon = entity->active_weapon();
 
-if (!weapon)
-	return;
-
-std::string names;
-names = clean_item_name(weapon->get_weapon_data()->weapon_name);
-
-render.draw_text(bbox.x + (bbox.w / 2), bbox.h + bbox.y + 2, render.name_font, names, true, color(red, green, blue, alpha[entity->index()]));
-}*/
-
-	if (config_system.item.player_weapon) {
-
+	if (config_system.item.player_weapon || config_system.item.player_weapon_icon) {
 		auto red = config_system.item.clr_weapon[0] * 255;
 		auto green = config_system.item.clr_weapon[1] * 255;
 		auto blue = config_system.item.clr_weapon[2] * 255;
+		
+		auto redi = config_system.item.clr_weapon_icon[0] * 255;
+		auto greeni = config_system.item.clr_weapon_icon[1] * 255;
+		auto bluei = config_system.item.clr_weapon_icon[2] * 255;
+
 		auto weapon = entity->active_weapon();
-
-		if (!weapon)
-			return;
-
 		auto weapon_data = weapon->get_weapon_data();
-
 		auto item_definition_index = weapon->item_definition_index();
-
-		if (!weapon_data)
+		if (!weapon || !weapon_data|| !item_definition_index)
 			return;
 
-		std::string weapon_name = weapon_data->hud_name;
-		weapon_name.erase(0, 13);
+		std::string weapon_name,weapon_icon;
 
-		std::string search = "M4A1";
-		std::string replace = "m4a4";
-		std::string search1 = "M4_SILENCER";
-		std::string replace1 = "m4a1_s";
-		std::string search2 = "AK47";
-		std::string replace2 = "ak47";
-		std::string search3 = "Elites";
-		std::string replace3 = "elite";
-		std::string search4 = "DesertEagle";
-		std::string replace4 = "deagle";
-		std::string search5 = "Aug";
-		std::string replace5 = "aug";
-		std::string search6 = "AWP";
-		std::string replace6 = "awp";
-		std::string search7 = "Famas";
-		std::string replace7 = "famas";
-		std::string search8 = "FiveSeven";
-		std::string replace8 = "fiveseven";
-		std::string search9 = "G3SG1";
-		std::string replace9 = "g3sg1";
-		std::string search10 = "GalilAR";
-		std::string replace10 = "galilar";
-		std::string search11 = "Glock18";
-		std::string replace11 = "glock18";
-		std::string search12 = "M249";
-		std::string replace12 = "m249";
-		std::string search13 = "MAC10";
-		std::string replace13 = "mac10";
-		std::string search14 = "P90";
-		std::string replace14 = "p90";
-		std::string search15 = "UMP45";
-		std::string replace15 = "ump45";
-		std::string search16 = "mx1014";
-		std::string replace16 = "xm1014";
-		std::string search17 = "Bizon";
-		std::string replace17 = "bizon";
-		std::string search18 = "Mag7";
-		std::string replace18 = "mag7";
-		std::string search19 = "Negev";
-		std::string replace19 = "negev";
-		std::string search20 = "Sawedoff";
-		std::string replace20 = "sawedoff";
-		std::string search21 = "Tec9";
-		std::string replace21 = "tec9";
-		std::string search22 = "Taser";
-		std::string replace22 = "zeus";
-		std::string search23 = "HKP2000";
-		std::string replace23 = "p2000";
-		std::string search24 = "MP7";
-		std::string replace24 = "mp7";
-		std::string search25 = "Nova";
-		std::string replace25 = "nova";
-		std::string search26 = "P250";
-		std::string replace26 = "p250";
-		std::string search27 = "CZ75";
-		std::string replace27 = "cz75";
-		std::string search28 = "SCAR20";
-		std::string replace28 = "scar20";
-		std::string search29 = "SG556";
-		std::string replace29 = "sg553";
-		std::string search30 = "SSG08";
-		std::string replace30 = "ssG08";
-		std::string search31 = "REVOLVER";
-		std::string replace31 = "revolver";
-		std::string search51 = "USP_SILENCER";
-		std::string replace51 = "usp_s";
-		std::string search52 = "MP9";
-		std::string replace52 = "mp9";
-		std::string search53 = "MP5SD";
-		std::string replace53 = "mp5";
-		//grenades
-		std::string search32 = "HE_Grenade";
-		std::string replace32 = "grenade";
-		std::string search33 = "Smoke_Grenade";
-		std::string replace33 = "smoke";
-		std::string search34 = "C4";
-		std::string replace34 = "c4";
-		std::string search35 = "MOLOTOV";
-		std::string replace35 = "fire_molo";
-		std::string search36 = "IncGrenade";
-		std::string replace36 = "fire_inc";
-		std::string search37 = "FLASHBANG";
-		std::string replace37 = "flash";
-		std::string search38 = "DECOY";
-		std::string replace38 = "decoy";
-		//knifes
-		std::string search39 = "KnifeBayonet";
-		std::string replace39 = "bayonet";
-		std::string search40 = "KnifeFlip";
-		std::string replace40 = "flip";
-		std::string search41 = "KnifeGut";
-		std::string replace41 = "gut";
-		std::string search42 = "KnifeM9";
-		std::string replace42 = "m9";
-		std::string search43 = "KnifeKaram";
-		std::string replace43 = "karambit";
-		std::string search44 = "KnifeTactical";
-		std::string replace44 = "huntsman";
-		std::string search45 = "Knife_Butterfly";
-		std::string replace45 = "butterfly";
-		std::string search46 = "knife_falchion_advanced";
-		std::string replace46 = "falchion";
-		std::string search47 = "knife_push";
-		std::string replace47 = "shadow";
-		std::string search48 = "knife_survival_bowie";
-		std::string replace48 = "bowie";
-		std::string search49 = "Knife_T";
-		std::string replace49 = "knife";
-		std::string search50 = "Knife";
-		std::string replace50 = "knife";
-
-
-		//weapons
-		for (int i = weapon_name.find(search); i >= 0; i = weapon_name.find(search))
-			weapon_name.replace(i, search.size(), replace);
-		for (int i = weapon_name.find(search1); i >= 0; i = weapon_name.find(search1))
-			weapon_name.replace(i, search1.size(), replace1);
-		for (int i = weapon_name.find(search2); i >= 0; i = weapon_name.find(search2))
-			weapon_name.replace(i, search2.size(), replace2);
-		for (int i = weapon_name.find(search3); i >= 0; i = weapon_name.find(search3))
-			weapon_name.replace(i, search3.size(), replace3);
-		for (int i = weapon_name.find(search4); i >= 0; i = weapon_name.find(search4))
-			weapon_name.replace(i, search4.size(), replace4);
-		for (int i = weapon_name.find(search5); i >= 0; i = weapon_name.find(search5))
-			weapon_name.replace(i, search5.size(), replace5);
-		for (int i = weapon_name.find(search6); i >= 0; i = weapon_name.find(search6))
-			weapon_name.replace(i, search6.size(), replace6);
-		for (int i = weapon_name.find(search7); i >= 0; i = weapon_name.find(search7))
-			weapon_name.replace(i, search7.size(), replace7);
-		for (int i = weapon_name.find(search8); i >= 0; i = weapon_name.find(search8))
-			weapon_name.replace(i, search8.size(), replace8);
-		for (int i = weapon_name.find(search9); i >= 0; i = weapon_name.find(search9))
-			weapon_name.replace(i, search9.size(), replace9);
-		for (int i = weapon_name.find(search10); i >= 0; i = weapon_name.find(search10))
-			weapon_name.replace(i, search10.size(), replace10);
-		for (int i = weapon_name.find(search11); i >= 0; i = weapon_name.find(search11))
-			weapon_name.replace(i, search11.size(), replace11);
-		for (int i = weapon_name.find(search12); i >= 0; i = weapon_name.find(search12))
-			weapon_name.replace(i, search12.size(), replace12);
-		for (int i = weapon_name.find(search13); i >= 0; i = weapon_name.find(search13))
-			weapon_name.replace(i, search13.size(), replace13);
-		for (int i = weapon_name.find(search14); i >= 0; i = weapon_name.find(search14))
-			weapon_name.replace(i, search14.size(), replace14);
-		for (int i = weapon_name.find(search15); i >= 0; i = weapon_name.find(search15))
-			weapon_name.replace(i, search15.size(), replace15);
-		for (int i = weapon_name.find(search16); i >= 0; i = weapon_name.find(search16))
-			weapon_name.replace(i, search16.size(), replace16);
-		for (int i = weapon_name.find(search17); i >= 0; i = weapon_name.find(search17))
-			weapon_name.replace(i, search17.size(), replace17);
-		for (int i = weapon_name.find(search18); i >= 0; i = weapon_name.find(search18))
-			weapon_name.replace(i, search18.size(), replace18);
-		for (int i = weapon_name.find(search19); i >= 0; i = weapon_name.find(search19))
-			weapon_name.replace(i, search19.size(), replace19);
-		for (int i = weapon_name.find(search20); i >= 0; i = weapon_name.find(search20))
-			weapon_name.replace(i, search20.size(), replace20);
-		for (int i = weapon_name.find(search21); i >= 0; i = weapon_name.find(search21))
-			weapon_name.replace(i, search21.size(), replace21);
-		for (int i = weapon_name.find(search22); i >= 0; i = weapon_name.find(search22))
-			weapon_name.replace(i, search22.size(), replace22);
-		for (int i = weapon_name.find(search23); i >= 0; i = weapon_name.find(search23))
-			weapon_name.replace(i, search23.size(), replace23);
-		for (int i = weapon_name.find(search24); i >= 0; i = weapon_name.find(search24))
-			weapon_name.replace(i, search24.size(), replace24);
-		for (int i = weapon_name.find(search25); i >= 0; i = weapon_name.find(search25))
-			weapon_name.replace(i, search25.size(), replace25);
-		for (int i = weapon_name.find(search26); i >= 0; i = weapon_name.find(search26))
-			weapon_name.replace(i, search26.size(), replace26);
-		for (int i = weapon_name.find(search27); i >= 0; i = weapon_name.find(search27))
-			weapon_name.replace(i, search27.size(), replace27);
-		for (int i = weapon_name.find(search28); i >= 0; i = weapon_name.find(search28))
-			weapon_name.replace(i, search28.size(), replace28);
-		for (int i = weapon_name.find(search29); i >= 0; i = weapon_name.find(search29))
-			weapon_name.replace(i, search29.size(), replace29);
-		for (int i = weapon_name.find(search30); i >= 0; i = weapon_name.find(search30))
-			weapon_name.replace(i, search30.size(), replace30);
-		for (int i = weapon_name.find(search31); i >= 0; i = weapon_name.find(search31))
-			weapon_name.replace(i, search31.size(), replace31);
-		for (int i = weapon_name.find(search32); i >= 0; i = weapon_name.find(search32))
-			weapon_name.replace(i, search32.size(), replace32);
-		for (int i = weapon_name.find(search33); i >= 0; i = weapon_name.find(search33))
-			weapon_name.replace(i, search33.size(), replace33);
-		for (int i = weapon_name.find(search34); i >= 0; i = weapon_name.find(search34))
-			weapon_name.replace(i, search34.size(), replace34);
-		for (int i = weapon_name.find(search35); i >= 0; i = weapon_name.find(search35))
-			weapon_name.replace(i, search35.size(), replace35);
-		for (int i = weapon_name.find(search36); i >= 0; i = weapon_name.find(search36))
-			weapon_name.replace(i, search36.size(), replace36);
-		for (int i = weapon_name.find(search37); i >= 0; i = weapon_name.find(search37))
-			weapon_name.replace(i, search37.size(), replace37);
-		for (int i = weapon_name.find(search38); i >= 0; i = weapon_name.find(search38))
-			weapon_name.replace(i, search38.size(), replace38);
-		for (int i = weapon_name.find(search39); i >= 0; i = weapon_name.find(search39))
-			weapon_name.replace(i, search39.size(), replace39);
-		for (int i = weapon_name.find(search40); i >= 0; i = weapon_name.find(search40))
-			weapon_name.replace(i, search40.size(), replace40);
-		for (int i = weapon_name.find(search41); i >= 0; i = weapon_name.find(search41))
-			weapon_name.replace(i, search41.size(), replace41);
-		for (int i = weapon_name.find(search42); i >= 0; i = weapon_name.find(search42))
-			weapon_name.replace(i, search42.size(), replace42);
-		for (int i = weapon_name.find(search43); i >= 0; i = weapon_name.find(search43))
-			weapon_name.replace(i, search43.size(), replace43);
-		for (int i = weapon_name.find(search44); i >= 0; i = weapon_name.find(search44))
-			weapon_name.replace(i, search44.size(), replace44);
-		for (int i = weapon_name.find(search45); i >= 0; i = weapon_name.find(search45))
-			weapon_name.replace(i, search45.size(), replace45);
-		for (int i = weapon_name.find(search46); i >= 0; i = weapon_name.find(search46))
-			weapon_name.replace(i, search46.size(), replace46);
-		for (int i = weapon_name.find(search47); i >= 0; i = weapon_name.find(search47))
-			weapon_name.replace(i, search47.size(), replace47);
-		for (int i = weapon_name.find(search48); i >= 0; i = weapon_name.find(search48))
-			weapon_name.replace(i, search48.size(), replace48);
-		for (int i = weapon_name.find(search49); i >= 0; i = weapon_name.find(search49))
-			weapon_name.replace(i, search49.size(), replace49);
-		for (int i = weapon_name.find(search50); i >= 0; i = weapon_name.find(search50))
-			weapon_name.replace(i, search50.size(), replace50);
-		for (int i = weapon_name.find(search51); i >= 0; i = weapon_name.find(search51))
-			weapon_name.replace(i, search51.size(), replace51);
-		for (int i = weapon_name.find(search52); i >= 0; i = weapon_name.find(search52))
-			weapon_name.replace(i, search52.size(), replace52);
-		for (int i = weapon_name.find(search53); i >= 0; i = weapon_name.find(search53))
-			weapon_name.replace(i, search53.size(), replace53);
-
-		render.draw_text(bbox.x + (bbox.w / 2), bbox.h + bbox.y + 2, render.name_font, weapon_name.c_str(), true, color(red, green, blue, alpha[entity->index()]));
-
-	}
-
-	if (config_system.item.player_weapon_icon) {
-
-		auto red = config_system.item.clr_weapon_icon[0] * 255;
-		auto green = config_system.item.clr_weapon_icon[1] * 255;
-		auto blue = config_system.item.clr_weapon_icon[2] * 255;
-		auto weapon = entity->active_weapon();
-
-		if (!weapon)
-			return;
-
-		auto weapon_data = weapon->get_weapon_data();
-
-		auto item_definition_index = weapon->item_definition_index();
-
-		if (!weapon_data)
-			return;
-
-		std::string weapon_icon = weapon_data->hud_name;
-		weapon_icon.erase(0, 13);
-
-		std::string search = "M4A1";
-		std::string replace = "S";
-		std::string search1 = "M4_SILENCER";
-		std::string replace1 = "T";
-		std::string search2 = "AK47";
-		std::string replace2 = "W";
-		std::string search3 = "Elites";
-		std::string replace3 = "B";
-		std::string search4 = "DesertEagle";
-		std::string replace4 = "A";
-		std::string search5 = "Aug";
-		std::string replace5 = "U";
-		std::string search6 = "AWP";
-		std::string replace6 = "Z";
-		std::string search7 = "Famas";
-		std::string replace7 = "R";
-		std::string search8 = "FiveSeven";
-		std::string replace8 = "C";
-		std::string search9 = "G3SG1";
-		std::string replace9 = "X";
-		std::string search10 = "GalilAR";
-		std::string replace10 = "Q";
-		std::string search11 = "Glock18";
-		std::string replace11 = "D";
-		std::string search12 = "M249";
-		std::string replace12 = "g";
-		std::string search13 = "MAC10";
-		std::string replace13 = "K";
-		std::string search14 = "P90";
-		std::string replace14 = "P";
-		std::string search15 = "UMP45";
-		std::string replace15 = "L";
-		std::string search16 = "xm1014";
-		std::string replace16 = "b";
-		std::string search17 = "Bizon";
-		std::string replace17 = "M";
-		std::string search18 = "Mag7";
-		std::string replace18 = "d";
-		std::string search19 = "Negev";
-		std::string replace19 = "f";
-		std::string search20 = "Sawedoff";
-		std::string replace20 = "c";
-		std::string search21 = "Tec9";
-		std::string replace21 = "H";
-		std::string search22 = "Taser";
-		std::string replace22 = "h";
-		std::string search23 = "HKP2000";
-		std::string replace23 = "E";
-		std::string search24 = "MP7";
-		std::string replace24 = "N";
-		std::string search25 = "Nova";
-		std::string replace25 = "e";
-		std::string search26 = "P250";
-		std::string replace26 = "F";
-		std::string search27 = "CZ75";
-		std::string replace27 = "I";
-		std::string search28 = "SCAR20";
-		std::string replace28 = "Y";
-		std::string search29 = "SG556";
-		std::string replace29 = "V";
-		std::string search30 = "SSG08";
-		std::string replace30 = "a";
-		std::string search31 = "REVOLVER";
-		std::string replace31 = "J";
-		std::string search51 = "USP_SILENCER";
-		std::string replace51 = "G";
-		std::string search52 = "MP9";
-		std::string replace52 = "O";
-		std::string search53 = "MP5SD";
-		std::string replace53 = "N";
-		//grenades
-		std::string search32 = "HE_Grenade";
-		std::string replace32 = "j";
-		std::string search33 = "Smoke_Grenade";
-		std::string replace33 = "k";
-		std::string search34 = "C4";
-		std::string replace34 = "o";
-		std::string search35 = "MOLOTOV";
-		std::string replace35 = "l";
-		std::string search36 = "IncGrenade";
-		std::string replace36 = "n";
-		std::string search37 = "FLASHBANG";
-		std::string replace37 = "i";
-		std::string search38 = "DECOY";
-		std::string replace38 = "m";
-		//knifes
-		std::string search39 = "KnifeBayonet";
-		std::string replace39 = "1";
-		std::string search40 = "KnifeFlip";
-		std::string replace40 = "2";
-		std::string search41 = "KnifeGut";
-		std::string replace41 = "3";
-		std::string search42 = "KnifeM9";
-		std::string replace42 = "5";
-		std::string search43 = "KnifeKaram";
-		std::string replace43 = "4";
-		std::string search44 = "KnifeTactical";
-		std::string replace44 = "6";
-		std::string search45 = "Knife_Butterfly";
-		std::string replace45 = "8";
-		std::string search46 = "knife_falchion_advanced";
-		std::string replace46 = "0";
-		std::string search47 = "knife_push";
-		std::string replace47 = "9";
-		std::string search48 = "knife_survival_bowie";
-		std::string replace48 = "7";
-		std::string search49 = "Knife_T";
-		std::string replace49 = "[";
-		std::string search50 = "Knife";
-		std::string replace50 = "]";
-
-
-		//weapons
-		for (int i = weapon_icon.find(search); i >= 0; i = weapon_icon.find(search))
-			weapon_icon.replace(i, search.size(), replace);
-		for (int i = weapon_icon.find(search1); i >= 0; i = weapon_icon.find(search1))
-			weapon_icon.replace(i, search1.size(), replace1);
-		for (int i = weapon_icon.find(search2); i >= 0; i = weapon_icon.find(search2))
-			weapon_icon.replace(i, search2.size(), replace2);
-		for (int i = weapon_icon.find(search3); i >= 0; i = weapon_icon.find(search3))
-			weapon_icon.replace(i, search3.size(), replace3);
-		for (int i = weapon_icon.find(search4); i >= 0; i = weapon_icon.find(search4))
-			weapon_icon.replace(i, search4.size(), replace4);
-		for (int i = weapon_icon.find(search5); i >= 0; i = weapon_icon.find(search5))
-			weapon_icon.replace(i, search5.size(), replace5);
-		for (int i = weapon_icon.find(search6); i >= 0; i = weapon_icon.find(search6))
-			weapon_icon.replace(i, search6.size(), replace6);
-		for (int i = weapon_icon.find(search7); i >= 0; i = weapon_icon.find(search7))
-			weapon_icon.replace(i, search7.size(), replace7);
-		for (int i = weapon_icon.find(search8); i >= 0; i = weapon_icon.find(search8))
-			weapon_icon.replace(i, search8.size(), replace8);
-		for (int i = weapon_icon.find(search9); i >= 0; i = weapon_icon.find(search9))
-			weapon_icon.replace(i, search9.size(), replace9);
-		for (int i = weapon_icon.find(search10); i >= 0; i = weapon_icon.find(search10))
-			weapon_icon.replace(i, search10.size(), replace10);
-		for (int i = weapon_icon.find(search11); i >= 0; i = weapon_icon.find(search11))
-			weapon_icon.replace(i, search11.size(), replace11);
-		for (int i = weapon_icon.find(search12); i >= 0; i = weapon_icon.find(search12))
-			weapon_icon.replace(i, search12.size(), replace12);
-		for (int i = weapon_icon.find(search13); i >= 0; i = weapon_icon.find(search13))
-			weapon_icon.replace(i, search13.size(), replace13);
-		for (int i = weapon_icon.find(search14); i >= 0; i = weapon_icon.find(search14))
-			weapon_icon.replace(i, search14.size(), replace14);
-		for (int i = weapon_icon.find(search15); i >= 0; i = weapon_icon.find(search15))
-			weapon_icon.replace(i, search15.size(), replace15);
-		for (int i = weapon_icon.find(search16); i >= 0; i = weapon_icon.find(search16))
-			weapon_icon.replace(i, search16.size(), replace16);
-		for (int i = weapon_icon.find(search17); i >= 0; i = weapon_icon.find(search17))
-			weapon_icon.replace(i, search17.size(), replace17);
-		for (int i = weapon_icon.find(search18); i >= 0; i = weapon_icon.find(search18))
-			weapon_icon.replace(i, search18.size(), replace18);
-		for (int i = weapon_icon.find(search19); i >= 0; i = weapon_icon.find(search19))
-			weapon_icon.replace(i, search19.size(), replace19);
-		for (int i = weapon_icon.find(search20); i >= 0; i = weapon_icon.find(search20))
-			weapon_icon.replace(i, search20.size(), replace20);
-		for (int i = weapon_icon.find(search21); i >= 0; i = weapon_icon.find(search21))
-			weapon_icon.replace(i, search21.size(), replace21);
-		for (int i = weapon_icon.find(search22); i >= 0; i = weapon_icon.find(search22))
-			weapon_icon.replace(i, search22.size(), replace22);
-		for (int i = weapon_icon.find(search23); i >= 0; i = weapon_icon.find(search23))
-			weapon_icon.replace(i, search23.size(), replace23);
-		for (int i = weapon_icon.find(search24); i >= 0; i = weapon_icon.find(search24))
-			weapon_icon.replace(i, search24.size(), replace24);
-		for (int i = weapon_icon.find(search25); i >= 0; i = weapon_icon.find(search25))
-			weapon_icon.replace(i, search25.size(), replace25);
-		for (int i = weapon_icon.find(search26); i >= 0; i = weapon_icon.find(search26))
-			weapon_icon.replace(i, search26.size(), replace26);
-		for (int i = weapon_icon.find(search27); i >= 0; i = weapon_icon.find(search27))
-			weapon_icon.replace(i, search27.size(), replace27);
-		for (int i = weapon_icon.find(search28); i >= 0; i = weapon_icon.find(search28))
-			weapon_icon.replace(i, search28.size(), replace28);
-		for (int i = weapon_icon.find(search29); i >= 0; i = weapon_icon.find(search29))
-			weapon_icon.replace(i, search29.size(), replace29);
-		for (int i = weapon_icon.find(search30); i >= 0; i = weapon_icon.find(search30))
-			weapon_icon.replace(i, search30.size(), replace30);
-		for (int i = weapon_icon.find(search31); i >= 0; i = weapon_icon.find(search31))
-			weapon_icon.replace(i, search31.size(), replace31);
-		for (int i = weapon_icon.find(search32); i >= 0; i = weapon_icon.find(search32))
-			weapon_icon.replace(i, search32.size(), replace32);
-		for (int i = weapon_icon.find(search33); i >= 0; i = weapon_icon.find(search33))
-			weapon_icon.replace(i, search33.size(), replace33);
-		for (int i = weapon_icon.find(search34); i >= 0; i = weapon_icon.find(search34))
-			weapon_icon.replace(i, search34.size(), replace34);
-		for (int i = weapon_icon.find(search35); i >= 0; i = weapon_icon.find(search35))
-			weapon_icon.replace(i, search35.size(), replace35);
-		for (int i = weapon_icon.find(search36); i >= 0; i = weapon_icon.find(search36))
-			weapon_icon.replace(i, search36.size(), replace36);
-		for (int i = weapon_icon.find(search37); i >= 0; i = weapon_icon.find(search37))
-			weapon_icon.replace(i, search37.size(), replace37);
-		for (int i = weapon_icon.find(search38); i >= 0; i = weapon_icon.find(search38))
-			weapon_icon.replace(i, search38.size(), replace38);
-		for (int i = weapon_icon.find(search39); i >= 0; i = weapon_icon.find(search39))
-			weapon_icon.replace(i, search39.size(), replace39);
-		for (int i = weapon_icon.find(search40); i >= 0; i = weapon_icon.find(search40))
-			weapon_icon.replace(i, search40.size(), replace40);
-		for (int i = weapon_icon.find(search41); i >= 0; i = weapon_icon.find(search41))
-			weapon_icon.replace(i, search41.size(), replace41);
-		for (int i = weapon_icon.find(search42); i >= 0; i = weapon_icon.find(search42))
-			weapon_icon.replace(i, search42.size(), replace42);
-		for (int i = weapon_icon.find(search43); i >= 0; i = weapon_icon.find(search43))
-			weapon_icon.replace(i, search43.size(), replace43);
-		for (int i = weapon_icon.find(search44); i >= 0; i = weapon_icon.find(search44))
-			weapon_icon.replace(i, search44.size(), replace44);
-		for (int i = weapon_icon.find(search45); i >= 0; i = weapon_icon.find(search45))
-			weapon_icon.replace(i, search45.size(), replace45);
-		for (int i = weapon_icon.find(search46); i >= 0; i = weapon_icon.find(search46))
-			weapon_icon.replace(i, search46.size(), replace46);
-		for (int i = weapon_icon.find(search47); i >= 0; i = weapon_icon.find(search47))
-			weapon_icon.replace(i, search47.size(), replace47);
-		for (int i = weapon_icon.find(search48); i >= 0; i = weapon_icon.find(search48))
-			weapon_icon.replace(i, search48.size(), replace48);
-		for (int i = weapon_icon.find(search49); i >= 0; i = weapon_icon.find(search49))
-			weapon_icon.replace(i, search49.size(), replace49);
-		for (int i = weapon_icon.find(search50); i >= 0; i = weapon_icon.find(search50))
-			weapon_icon.replace(i, search50.size(), replace50);
-		for (int i = weapon_icon.find(search51); i >= 0; i = weapon_icon.find(search51))
-			weapon_icon.replace(i, search51.size(), replace51);
-		for (int i = weapon_icon.find(search52); i >= 0; i = weapon_icon.find(search52))
-			weapon_icon.replace(i, search52.size(), replace52);
-		for (int i = weapon_icon.find(search53); i >= 0; i = weapon_icon.find(search53))
-			weapon_icon.replace(i, search53.size(), replace53);
-
-		render.draw_text(bbox.x + (bbox.w / 2), bbox.h + bbox.y + 2 +9, render.icon_font, weapon_icon.c_str(), true, color(red, green, blue, alpha[entity->index()]));
+		switch (reinterpret_cast<weapon_t*>(weapon)->item_definition_index()){
+		case item_definition_indexes::WEAPON_NONE:
+			weapon_name = "";
+			weapon_icon = "";
+			break;
+		case item_definition_indexes::WEAPON_BAYONET:
+		case item_definition_indexes::WEAPON_KNIFE_FLIP:
+		case item_definition_indexes::WEAPON_KNIFE_GUT:
+		case item_definition_indexes::WEAPON_KNIFE_KARAMBIT:
+		case item_definition_indexes::WEAPON_KNIFE_M9_BAYONET:
+		case item_definition_indexes::WEAPON_KNIFE_TACTICAL:
+		case item_definition_indexes::WEAPON_KNIFE_FALCHION:
+		case item_definition_indexes::WEAPON_KNIFE_SURVIVAL_BOWIE:
+		case item_definition_indexes::WEAPON_KNIFE_BUTTERFLY:
+		case item_definition_indexes::WEAPON_KNIFE_PUSH:
+		case item_definition_indexes::WEAPON_KNIFE_URSUS:
+		case item_definition_indexes::WEAPON_KNIFE_GYPSY_JACKKNIFE:
+		case item_definition_indexes::WEAPON_KNIFE_STILETTO:
+		case item_definition_indexes::WEAPON_KNIFE_WIDOWMAKER:
+		case item_definition_indexes::WEAPON_KNIFE:
+			weapon_name = "knife";
+			weapon_icon = "]";
+			break;
+		case item_definition_indexes::WEAPON_KNIFE_T:
+			weapon_name = "knife";
+			weapon_icon = "[";
+			break;
+		case item_definition_indexes::WEAPON_DEAGLE:
+			weapon_name = "deagle";
+			weapon_icon = "A";
+			break;
+		case item_definition_indexes::WEAPON_AUG:
+			weapon_name = "aug";
+			weapon_icon = "U";
+			break;
+		case item_definition_indexes::WEAPON_G3SG1:
+			weapon_name = "g3sg1";
+			weapon_icon = "X";
+			break;
+		case item_definition_indexes::WEAPON_MAC10:
+			weapon_name = "mac10";
+			weapon_icon = "K";
+			break;
+		case item_definition_indexes::WEAPON_P90:
+			weapon_name = "p90";
+			weapon_icon = "P";
+			break;
+		case item_definition_indexes::WEAPON_SSG08:
+			weapon_name = "ssg08";
+			weapon_icon = "a";
+			break;
+		case item_definition_indexes::WEAPON_SCAR20:
+			weapon_name = "scar20";
+			weapon_icon = "Y";
+			break;
+		case item_definition_indexes::WEAPON_UMP45:
+			weapon_name = "ump45";
+			weapon_icon = "L";
+			break;
+		case item_definition_indexes::WEAPON_ELITE:
+			weapon_name = "elite";
+			weapon_icon = "B";
+			break;
+		case item_definition_indexes::WEAPON_FAMAS:
+			weapon_name = "famas";
+			weapon_icon = "R";
+			break;
+		case item_definition_indexes::WEAPON_FIVESEVEN:
+			weapon_name = "fiveseven";
+			weapon_icon = "C";
+			break;
+		case item_definition_indexes::WEAPON_GALILAR:
+			weapon_name = "galilar";
+			weapon_icon = "Q";
+			break;
+		case item_definition_indexes::WEAPON_M4A1_SILENCER:
+			weapon_name = "m4a1_s";
+			weapon_icon = "T";
+			break;
+		case item_definition_indexes::WEAPON_M4A1:
+			weapon_name = "m4a4";
+			weapon_icon = "S";
+			break;
+		case item_definition_indexes::WEAPON_P250:
+			weapon_name = "p250";
+			weapon_icon = "F";
+			break;
+		case item_definition_indexes::WEAPON_M249:
+			weapon_name = "m249";
+			weapon_icon = "g";
+			break;
+		case item_definition_indexes::WEAPON_XM1014:
+			weapon_name = "xm1014";
+			weapon_icon = "b";
+			break;
+		case item_definition_indexes::WEAPON_GLOCK:
+			weapon_name = "glock";
+			weapon_icon = "D";
+			break;
+		case item_definition_indexes::WEAPON_USP_SILENCER:
+			weapon_name = "usp_s";
+			weapon_icon = "G";
+			break;
+		case item_definition_indexes::WEAPON_HKP2000:
+			weapon_name = "p2000";
+			weapon_icon = "E";
+			break;
+		case item_definition_indexes::WEAPON_AK47:
+			weapon_name = "ak47";
+			weapon_icon = "W";
+			break;
+		case item_definition_indexes::WEAPON_AWP:
+			weapon_name = "awp";
+			weapon_icon = "Z";
+			break;
+		case item_definition_indexes::WEAPON_BIZON:
+			weapon_name = "bizon";
+			weapon_icon = "M";
+			break;
+		case item_definition_indexes::WEAPON_MAG7:
+			weapon_name = "mag7";
+			weapon_icon = "d";
+			break;
+		case item_definition_indexes::WEAPON_NEGEV:
+			weapon_name = "negev";
+			weapon_icon = "f";
+			break;
+		case item_definition_indexes::WEAPON_SAWEDOFF:
+			weapon_name = "sawedoff";
+			weapon_icon = "c";
+			break;
+		case item_definition_indexes::WEAPON_TEC9:
+			weapon_name = "tec9";
+			weapon_icon = "H";
+			break;
+		case item_definition_indexes::WEAPON_TASER:
+			weapon_name = "zeus";
+			weapon_icon = "h";
+			break;
+		case item_definition_indexes::WEAPON_NOVA:
+			weapon_name = "nova";
+			weapon_icon = "e";
+			break;
+		case item_definition_indexes::WEAPON_CZ75A:
+			weapon_name = "cz75";
+			weapon_icon = "I";
+			break;
+		case item_definition_indexes::WEAPON_SG556:
+			weapon_name = "sg553";
+			weapon_icon = "V";
+			break;
+		case item_definition_indexes::WEAPON_REVOLVER:
+			weapon_name = "revolver";
+			weapon_icon = "J";
+			break;
+		case item_definition_indexes::WEAPON_MP7:
+			weapon_name = "mp7";
+			weapon_icon = "N";
+			break;
+		case item_definition_indexes::WEAPON_MP9:
+			weapon_name = "mp9";
+			weapon_icon = "O";
+			break;
+		case item_definition_indexes::WEAPON_MP5SD:  //same icon as ump
+			weapon_name = "mp5";
+			weapon_icon = "L";
+			break;
+		case item_definition_indexes::WEAPON_C4:
+			weapon_name = "c4";
+			weapon_icon = "o";
+			break;
+		case item_definition_indexes::WEAPON_FRAG_GRENADE:
+			weapon_name = "grenade";
+			weapon_icon = "j";
+			break;
+		case item_definition_indexes::WEAPON_SMOKEGRENADE:
+			weapon_name = "smoke";
+			weapon_icon = "k";
+			break;
+		case item_definition_indexes::WEAPON_MOLOTOV:
+			weapon_name = "fire_molo";
+			weapon_icon = "l";
+			break;
+		case item_definition_indexes::WEAPON_INCGRENADE:
+			weapon_name = "fire_inc";
+			weapon_icon = "n";
+			break;
+		case item_definition_indexes::WEAPON_FLASHBANG:
+			weapon_name = "flash";
+			weapon_icon = "i";
+			break;
+		case item_definition_indexes::WEAPON_DECOY:
+			weapon_name = "decoy";
+			weapon_icon = "m";
+			break;
+		}
+		int h_index = 0;
+		if (config_system.item.player_weapon) {
+			render.draw_text(bbox.x + (bbox.w / 2), bbox.h + (10 * h_index) + bbox.y + 2, render.name_font, weapon_name.c_str(), true, color(red, green, blue, alpha[entity->index()]));
+			h_index++;
+		}
+		if (config_system.item.player_weapon_icon) {
+			render.draw_text(bbox.x + (bbox.w / 2), bbox.h + (10 * h_index) + bbox.y + 2, render.icon_font, weapon_icon.c_str(), true, color(redi, greeni, bluei, alpha[entity->index()]));
+			h_index++;
+		}
 	}
 }
 
@@ -707,95 +422,186 @@ void c_visuals::dropped_weapons(player_t* entity) noexcept {
 	auto class_id = entity->client_class()->class_id;
 	auto model_name = interfaces::model_info->get_model_name(entity->model());
 	auto weapon = entity;
-
-	if (!entity)
-		return;
-
-	if (!weapon)
+	if (!entity || !weapon ||!class_id)
 		return;
 
 	vec3_t dropped_weapon_position, dropped_weapon_origin;
-
 	dropped_weapon_origin = weapon->origin();
 
 	if (!math.world_to_screen(dropped_weapon_origin, dropped_weapon_position))
 		return;
 
 	if (!(entity->origin().x == 0 && entity->origin().y == 0 && entity->origin().z == 0)) { //ghetto fix sorry - designer
+		std::string weapon_name, weapon_icon;
 		if (config_system.item.dropped_weapons) {
-			
-			if (class_id == class_ids::cc4)
-				render.draw_text(dropped_weapon_position.x, dropped_weapon_position.y, render.name_font, "c4", true, color(255, 127, 36));
 
-			if (strstr(model_name, "w_defuser"))
-				render.draw_text(dropped_weapon_position.x, dropped_weapon_position.y, render.name_font, "kit", true, color(30, 144, 255));
-		}
-
-		if (config_system.item.dropped_weapons && !strstr(model_name, "models/weapons/w_eq_")
-			&& !strstr(model_name, "models/weapons/w_ied"))
-		{
-			if (strstr(model_name, "models/weapons/w_") && strstr(model_name, "_dropped.mdl"))
-			{
-				std::string WeaponName = model_name + 17;
-
-				WeaponName[WeaponName.size() - 12] = '\0';
-
-				if (strstr(model_name, "models/weapons/w_rif") && strstr(model_name, "_dropped.mdl"))
-				{
-					WeaponName.erase(0, 4);
-				}
-				else if (strstr(model_name, "models/weapons/w_pist") && strstr(model_name, "_dropped.mdl") && !strstr(model_name, "models/weapons/w_pist_223"))
-				{
-					WeaponName.erase(0, 5);
-				}
-				else if (strstr(model_name, "models/weapons/w_smg") && strstr(model_name, "_dropped.mdl"))
-				{
-					WeaponName.erase(0, 4);
-				}
-				else if (strstr(model_name, "models/weapons/w_mach") && strstr(model_name, "_dropped.mdl"))
-				{
-					WeaponName.erase(0, 5);
-				}
-				else if (strstr(model_name, "models/weapons/w_shot") && strstr(model_name, "_dropped.mdl"))
-				{
-					WeaponName.erase(0, 5);
-				}
-				else if (strstr(model_name, "models/weapons/w_snip") && strstr(model_name, "_dropped.mdl"))
-				{
-					WeaponName.erase(0, 5);
-				}
-				if (strstr(model_name, "models/weapons/w_pist_223") && strstr(model_name, "_dropped.mdl"))
-				{
-					WeaponName = "usp_s";
-				}
-				if (strstr(model_name, "models/weapons/w_pist_hkp2000") && strstr(model_name, "_dropped.mdl"))
-				{
-					WeaponName = "p2000";
-				}
-				if (strstr(model_name, "models/weapons/w_pist_cz_75") && strstr(model_name, "_dropped.mdl"))
-				{
-					WeaponName = "cz75";
-				}
-				if (strstr(model_name, "models/weapons/w_rif_m4a1") && strstr(model_name, "_dropped.mdl"))
-				{
-					WeaponName = "m4a4";
-				}
-				if (strstr(model_name, "models/weapons/w_rif_m4a1_s") && strstr(model_name, "_dropped.mdl"))
-				{
-					WeaponName = "m4a1_s";
-				}
-				if (strstr(model_name, "models/weapons/w_rif_sg556") && strstr(model_name, "_dropped.mdl"))
-				{
-					WeaponName = "sg553";
-				}
-				if (strstr(model_name, "models/weapons/w_smg_mp5sd") && strstr(model_name, "_dropped.mdl"))
-				{
-					WeaponName = "mp5";
-				}
-
-				render.draw_text(dropped_weapon_position.x, dropped_weapon_position.y, render.name_font, WeaponName.c_str(), true, color(255, 255, 255));
-
+			if (class_id == class_ids::cc4) {
+				weapon_name = "c4";
+				weapon_icon = "o";
 			}
+			if (strstr(model_name, "w_defuser")) {
+				weapon_name = "kit";
+				weapon_icon = "r";
+			}
+		}
+		if (config_system.item.dropped_weapons && !strstr(model_name, "models/weapons/w_eq_")
+			&& !strstr(model_name, "models/weapons/w_ied")){
+			if (strstr(model_name, "models/weapons/w_") && strstr(model_name, "_dropped.mdl")){
+							
+				if (strstr(model_name, "models/weapons/w_rif_m4a1_s") && strstr(model_name, "_dropped.mdl")) {
+					weapon_name = "m4a1_s";
+					weapon_icon = "T";
+				}
+				if (strstr(model_name, "models/weapons/w_rif_m4a1") && strstr(model_name, "_dropped.mdl")) {
+					weapon_name = "m4a4";
+					weapon_icon = "S";
+				}
+				if (strstr(model_name, "models/weapons/w_pist_223") && strstr(model_name, "_dropped.mdl")) {
+					weapon_name = "usp_s";
+					weapon_icon = "G";
+				}
+				if (strstr(model_name, "models/weapons/w_pist_hkp2000") && strstr(model_name, "_dropped.mdl")) {
+					weapon_name = "p2000";
+					weapon_icon = "E";
+				}
+				if (strstr(model_name, "models/weapons/w_pist_cz_75") && strstr(model_name, "_dropped.mdl")) {
+					weapon_name = "cz75";
+					weapon_icon = "I";
+				}
+				if (strstr(model_name, "models/weapons/w_pist_revolver") && strstr(model_name, "_dropped.mdl")) {
+					weapon_name = "revolver";
+					weapon_icon = "J";
+				}
+				if (strstr(model_name, "models/weapons/w_smg_mp5sd") && strstr(model_name, "_dropped.mdl")) {  //same icon as ump
+					weapon_name = "mp5";
+					weapon_icon = "L";
+				}
+				if (class_id == class_ids::cknife) {
+					weapon_name = "knife";
+					weapon_icon = "]";
+				}
+				if (class_id == class_ids::cdeagle) {
+					weapon_name = "deagle";
+					weapon_icon = "A";
+				}
+				if (class_id == class_ids::cweaponaug) {
+					weapon_name = "aug";
+					weapon_icon = "U";
+				}
+				if (class_id == class_ids::cweapong3sg1) {
+					weapon_name = "g3sg1";
+					weapon_icon = "X";
+				}
+				if (class_id == class_ids::cweaponmac10 ) {
+					weapon_name = "mac10";
+					weapon_icon = "K";
+				}
+				if (class_id == class_ids::cweaponp90) {
+					weapon_name = "p90";
+					weapon_icon = "P";
+				}
+				if (class_id == class_ids::cweaponssg08) {
+					weapon_name = "ssg08";
+					weapon_icon = "a";
+				}
+				if (class_id == class_ids::cweaponscar20) {
+					weapon_name = "scar20";
+					weapon_icon = "Y";
+				}
+				if (class_id == class_ids::cweaponump45) {
+					weapon_name = "ump45";
+					weapon_icon = "L";
+				}
+				if (class_id == class_ids::cweaponelite) {
+					weapon_name = "elite";
+					weapon_icon = "B";
+				}
+				if (class_id == class_ids::cweaponfamas) {
+					weapon_name = "famas";
+					weapon_icon = "R";
+				}
+				if (class_id == class_ids::cweaponfiveseven) {
+					weapon_name = "fiveseven";
+					weapon_icon = "C";
+				}
+				if (class_id == class_ids::cweapongalilar) {
+					weapon_name = "galilar";
+					weapon_icon = "Q";
+				}
+				if (class_id == class_ids::cweaponp250) {
+					weapon_name = "p250";
+					weapon_icon = "F";
+				}
+				if (class_id == class_ids::cweaponm249) {
+					weapon_name = "m249";
+					weapon_icon = "g";
+				}
+				if (class_id == class_ids::cweaponxm1014) {
+					weapon_name = "xm1014";
+					weapon_icon = "b";
+				}
+				if (class_id == class_ids::cweaponglock) {
+					weapon_name = "glock";
+					weapon_icon = "D";
+				}
+				if (class_id == class_ids::cak47) {
+					weapon_name = "ak47";
+					weapon_icon = "W";
+				}
+				if (class_id == class_ids::cweaponawp) {
+					weapon_name = "awp";
+					weapon_icon = "Z";
+				}
+				if (class_id == class_ids::cweaponbizon) {
+					weapon_name = "bizon";
+					weapon_icon = "M";
+				}
+				if (class_id == class_ids::cweaponmag7) {
+					weapon_name = "mag7";
+					weapon_icon = "d";
+				}
+				if (class_id == class_ids::cweaponnegev) {
+					weapon_name = "negev";
+					weapon_icon = "f";
+				}
+				if (class_id == class_ids::cweaponsawedoff) {
+					weapon_name = "sawedoff";
+					weapon_icon = "c";
+				}
+				if (class_id == class_ids::cweapontec9) {
+					weapon_name = "tec9";
+					weapon_icon = "H";
+				}
+				if (class_id == class_ids::cweapontaser) {
+					weapon_name = "zeus";
+					weapon_icon = "h";
+				}
+				if (class_id == class_ids::cweaponnova) {
+					weapon_name = "nova";
+					weapon_icon = "e";
+				}
+				if (class_id == class_ids::cweaponsg556) {
+					weapon_name = "sg553";
+					weapon_icon = "V";
+				}
+				if (class_id == class_ids::cweaponmp7) {
+					weapon_name = "mp7";
+					weapon_icon = "N";
+				}
+				if (class_id == class_ids::cweaponmp9) {
+					weapon_name = "mp9";
+					weapon_icon = "O";
+				}
+			}
+		}
+		int h_index = 0;
+		if (config_system.item.player_weapon) {
+			render.draw_text(dropped_weapon_position.x, dropped_weapon_position.y + (10 * h_index), render.name_font, weapon_name.c_str(), true, color(255, 255, 255));
+			h_index++;
+		}
+		if (config_system.item.player_weapon_icon) {
+			render.draw_text(dropped_weapon_position.x, dropped_weapon_position.y + (10 * h_index), render.icon_font, weapon_icon.c_str(), true, color(255, 255, 255));
+			h_index++;
 		}
 
 		if (config_system.item.danger_zone_dropped) { 	//no need to create separate func for danger zone shit - designer (also use switch instead of else if)
@@ -874,65 +680,78 @@ void c_visuals::dropped_weapons(player_t* entity) noexcept {
 void c_visuals::projectiles(player_t* entity) noexcept {
 	if (!config_system.item.projectiles)
 		return;
-
-	if (!entity)
-		return;
-
+	
 	auto client_class = entity->client_class();
 	auto model = entity->model();
-
-	if (!model)
+	if (!entity || !model)
 		return;
 
 	if (model) {
 		vec3_t grenade_position, grenade_origin;
 
 		auto model = interfaces::model_info->get_studio_model(entity->model());
-
 		if (!model || !strstr(model->name_char_array, "thrown") && !strstr(model->name_char_array, "dropped"))
 			return;
 
-		std::string name = model->name_char_array;
+		std::string name = model->name_char_array,grenade_name, grenade_icon;
 		grenade_origin = entity->origin();
 
 		if (!math.world_to_screen(grenade_origin, grenade_position))
 			return;
-
+		
+		if (name.find("fraggrenade") != std::string::npos) {
+			grenade_name = "grenade";
+			grenade_icon = "j";
+			grenade_color = color(255, 0, 0);
+		}
+		if (name.find("smokegrenade") != std::string::npos) {
+			grenade_name = "smoke";
+			grenade_icon = "k";
+			grenade_color = color(0, 155, 255);
+		}
+		if (name.find("molotov") != std::string::npos) {
+			grenade_name = "fire_molo";
+			grenade_icon = "l";
+			grenade_color = color(255, 0, 255);
+		}
+		if (name.find("incendiarygrenade") != std::string::npos) {
+			grenade_name = "fire_inc";
+			grenade_icon = "n";
+			grenade_color = color(255, 0, 255);
+		}
 		if (name.find("flashbang") != std::string::npos) {
-			render.draw_text(grenade_position.x, grenade_position.y, render.name_font, "flash", true, color(255, 255, 10));
+			grenade_name = "flash";
+			grenade_icon = "i";
+			grenade_color = color(255, 255, 10);
+		}
+		if (name.find("decoy") != std::string::npos) {
+			grenade_name = "decoy";
+			grenade_icon = "m";
+			grenade_color = color(255, 255, 255);
+		}	
+		int h_index = 0;
+		if (config_system.item.player_weapon) {
+			render.draw_text(grenade_position.x, grenade_position.y + (10 * h_index), render.name_font, grenade_name, true, grenade_color);
+			h_index++;
+		}
+		if (config_system.item.player_weapon_icon) {
+			render.draw_text(grenade_position.x, grenade_position.y + (10 * h_index), render.icon_font, grenade_icon, true, grenade_color);
+			h_index++;
 		}
 
-		else if (name.find("smokegrenade") != std::string::npos) {
-			render.draw_text(grenade_position.x, grenade_position.y, render.name_font, "smoke", true, color(0, 55, 255));
-
+		if (name.find("smokegrenade") != std::string::npos) {
 			auto time = interfaces::globals->interval_per_tick * (interfaces::globals->tick_count - entity->smoke_grenade_tick_begin());
 
 			if (!(18 - time < 0)) {
-				render.draw_filled_rect(grenade_position.x - 18, grenade_position.y + 13, 36, 3, color(10, 10, 10, 180));
-				render.draw_filled_rect(grenade_position.x - 18, grenade_position.y + 13, time * 2, 3, color(167, 24, 71, 255));
+				render.draw_filled_rect(grenade_position.x - 18, grenade_position.y + (10 * h_index), 36, 3, color(10, 10, 10, 180));
+				render.draw_filled_rect(grenade_position.x - 18, grenade_position.y + (10 * h_index), time * 2, 3, color(167, 24, 71, 255));
+				h_index++;
 			}
-		}
-
-		else if (name.find("incendiarygrenade") != std::string::npos) {
-			render.draw_text(grenade_position.x, grenade_position.y, render.name_font, "fire_inc", true, color(255, 0, 255));
-		}
-
-		else if (name.find("molotov") != std::string::npos) {
-			render.draw_text(grenade_position.x, grenade_position.y, render.name_font, "fire_molo", true, color(255, 0, 255));
-		}
-
-		else if (name.find("fraggrenade") != std::string::npos) {
-			render.draw_text(grenade_position.x, grenade_position.y, render.name_font, "grenade", true, color(255, 0, 0));
-		}
-
-		else if (name.find("decoy") != std::string::npos) {
-			render.draw_text(grenade_position.x, grenade_position.y, render.name_font, "decoy", true, color(255, 255, 255));
 		}
 	}
 }
 
-void c_visuals::bomb_esp(player_t* entity) noexcept {
-
+void c_visuals::bomb_esp(player_t* entity) noexcept {	
 	if (!config_system.item.bomb_planted)
 		return;
 
@@ -941,18 +760,14 @@ void c_visuals::bomb_esp(player_t* entity) noexcept {
 		return;
 
 	auto explode_time = entity->c4_blow_time();
-
 	auto remaining_time = explode_time - (interfaces::globals->interval_per_tick * local_player->get_tick_base());
 	if (remaining_time < 0)
 		return;
-	if (remaining_time == 0)
-		return;
-
+	
 	int width, height;
 	interfaces::engine->get_screen_size(width, height);
 
 	vec3_t bomb_origin, bomb_position;
-
 	bomb_origin = entity->origin();
 
 	explode_time -= interfaces::globals->interval_per_tick * local_player->get_tick_base();
@@ -981,7 +796,6 @@ void c_visuals::bomb_esp(player_t* entity) noexcept {
 	damage_text += std::to_string((int)(damage));
 	damage_text += "HP";
 
-
 	//render on screen bomb bar
 	if (explode_time <= 10) {
 		render.draw_filled_rect(0, 0, 10, value, color(255, 0, 0, 180));
@@ -993,41 +807,34 @@ void c_visuals::bomb_esp(player_t* entity) noexcept {
 	player_t* bomb = nullptr;
 	for (int i = 1; i < interfaces::entity_list->get_highest_index(); i++) {
 	
-		if (entity->client_class()->class_id == class_ids::cplantedc4)
-		{
+		if (entity->client_class()->class_id == class_ids::cplantedc4) {
 			bomb = (player_t*)entity;
 			break;
 		}
 	}
-	
-	//render bomb position
-	render.draw_text(12, value - 11, render.name_font, bomb->get_callout(), false, color(0, 255, 0));
 
 	//render bomb timer
-	render.draw_text(12, value - 21, render.name_font, buffer, false, color(255, 255, 255));
+	render.draw_text(12, value - 11, render.name_font_big, buffer, false, color(255, 255, 255));
 
 	//render bomb damage
 	if (local_player->is_alive()) {
-		render.draw_text(12, value - 31, render.name_font, damage_text, false, color(255, 255, 255));
+		render.draw_text(12, value - 21, render.name_font_big, damage_text, false, color(255, 255, 255));
 	}
 
 	//render fatal check
 	if (local_player->is_alive() && damage >= local_player->health()) {
-		render.draw_text(12, value - 41, render.name_font, "FATAL", false, color(255, 0, 0));
+		render.draw_text(12, value - 31, render.name_font_big, "FATAL", false, color(255, 0, 0));
 	}
 
 	if (!math.world_to_screen(bomb_origin, bomb_position))
 		return;
-
 	//render classic world timer + bar
-	render.draw_text(bomb_position.x, bomb_position.y, render.name_font, buffer, true, color(255, 255, 255));
-	render.draw_text(bomb_position.x, bomb_position.y + 30, render.name_font, bomb->get_callout(), true, color(0,255, 0));
+	render.draw_text(bomb_position.x, bomb_position.y, render.name_font_big, buffer, true, color(255, 255, 255));
 	render.draw_filled_rect(bomb_position.x - c4_timer / 2, bomb_position.y + 13, c4_timer, 3, color(10, 10, 10, 180)); //c4_timer / 2 so it always will be centered
 	render.draw_filled_rect(bomb_position.x - c4_timer / 2, bomb_position.y + 13, explode_time, 3, color(167, 24, 71, 255));
 }
 
-void c_visuals::bomb_defuse_esp(player_t* entity) noexcept {
-	
+void c_visuals::bomb_defuse_esp(player_t* entity) noexcept {	
 	if (!config_system.item.bomb_planted)
 		return;
 
@@ -1038,8 +845,7 @@ void c_visuals::bomb_defuse_esp(player_t* entity) noexcept {
 	int width, height;
 	interfaces::engine->get_screen_size(width, height);
 
-	auto explode_time = entity->c4_blow_time();
-	auto remaining_time = explode_time - (interfaces::globals->interval_per_tick * local_player->get_tick_base());
+	auto remaining_time = entity->c4_blow_time() - (interfaces::globals->interval_per_tick * local_player->get_tick_base());
 	auto countdown = entity->get_c4_defuse_countdown() - (local_player->get_tick_base() * interfaces::globals->interval_per_tick);
 
 	char defuse_time_string[24];
@@ -1049,38 +855,29 @@ void c_visuals::bomb_defuse_esp(player_t* entity) noexcept {
 	vec3_t bomb_origin, bomb_position;
 	bomb_origin = entity->origin();
 
-	if (entity->c4_gets_defused() > 0) {
-		// on srcreen		
-		if (countdown > 0.01f) {
-			if (remaining_time > countdown) {
-				//loading leftside		
-				render.draw_filled_rect(10, 0, 10, defvalue, color(0, 191, 255, 180));
-				render.draw_text(12, defvalue - 11, render.name_font, defuse_time_string, false, color(0, 191, 255));
-			}
-			else {
-				//loading leftside no time
-				render.draw_filled_rect(10, 0, 10, defvalue, color(255, 0, 0, 180));
-				render.draw_text(12, defvalue - 11, render.name_font, "NO TIME", false, color(255, 0, 0));
-			}
+	if (entity->c4_gets_defused() > 0) {	
+		
+		if (remaining_time > countdown) { // on srcreen
+			render.draw_filled_rect(10, 0, 10, defvalue, color(0, 191, 255, 180));
+			render.draw_text(12, defvalue - 11, render.name_font_big, defuse_time_string, false, color(0, 191, 255));
 		}
-	}	
-	if (entity->c4_gets_defused() > 0) { 
-		// on bomb	
+		else{
+			render.draw_filled_rect(10, 0, 10, defvalue, color(255, 0, 0, 180));
+			render.draw_text(12, (countdown * height) - 11, render.name_font_big, "NO TIME", false, color(255, 0, 0));
+		}
+			
 		if (!math.world_to_screen(bomb_origin, bomb_position))
 			return;
-		if (countdown > 0.01f){
-			if (remaining_time > countdown){
-				//render classic world timer + bar			
-				render.draw_text(bomb_position.x, bomb_position.y+15, render.name_font, defuse_time_string, true, color(0,50,255));
-				render.draw_filled_rect(bomb_position.x - remaining_time / 3, bomb_position.y + 13+ 15, remaining_time, 3, color(10, 10, 10, 180)); //c4_timer / 2 so it always will be centered
-				render.draw_filled_rect(bomb_position.x - remaining_time / 3, bomb_position.y + 13+ 15, countdown, 3, color(0, 50, 255,255));
-			}
-			else {
-				render.draw_text(bomb_position.x , bomb_position.y + 15, render.name_font, "NO TIME", true, color(255, 0, 0));
-			}
+		
+		if (remaining_time > countdown) {// on bomb  	
+			render.draw_text(bomb_position.x, bomb_position.y + 15, render.name_font_big, defuse_time_string, true, color(0, 191, 255));
+			render.draw_filled_rect(bomb_position.x - countdown / 2, bomb_position.y + 13 + 15, countdown, 3, color(10, 10, 10, 180)); //c4_timer / 2 so it always will be centered
+			render.draw_filled_rect(bomb_position.x - countdown / 2, bomb_position.y + 13 + 15, remaining_time, 3, color(0, 191, 255, 255));
+		}
+		else {
+			render.draw_text(bomb_position.x, bomb_position.y + 15, render.name_font_big, "NO TIME", true, color(255, 0, 0));
 		}
 	}
-
 }
 
 void c_visuals::chams() noexcept {
@@ -1171,6 +968,9 @@ void c_visuals::chams() noexcept {
 void c_visuals::chams_misc(const model_render_info_t& info) noexcept {
 
 	auto model_name = interfaces::model_info->get_model_name((model_t*)info.model);
+	if (!model_name)
+		return;
+
 	static i_material* mat = nullptr;
 	auto textured = interfaces::material_system->find_material("aristois_material", TEXTURE_GROUP_MODEL, true, nullptr);
 	auto metalic = interfaces::material_system->find_material("aristois_reflective", TEXTURE_GROUP_MODEL, true, nullptr);
@@ -1195,22 +995,25 @@ void c_visuals::chams_misc(const model_render_info_t& info) noexcept {
 		mat = dogtag;
 		break;
 	}
-
-	if (config_system.item.weapon_chams && strstr(model_name, "models/weapons/v_")) {
+	
+	if (config_system.item.weapon_chams && strstr(model_name, "models/weapons/v_") 
+		&& !strstr(model_name, "arms") && !strstr(model_name, "sleeve")) {
 
 		interfaces::render_view->set_blend(config_system.item.clr_weapon_chams[3]);
 		interfaces::render_view->modulate_color(config_system.item.clr_weapon_chams);
 		mat->set_material_var_flag(MATERIAL_VAR_IGNOREZ, false);
 		interfaces::model_render->override_material(mat);
+
 	}
-	if (config_system.item.hand_chams && strstr(model_name, "arms"))
-	{
+	if (config_system.item.hand_chams && strstr(model_name, "arms") 
+		&& !strstr(model_name, "sleeve")) {
+
 		interfaces::render_view->set_blend(config_system.item.clr_hand_chams[3]);
 		interfaces::render_view->modulate_color(config_system.item.clr_hand_chams);
 		mat->set_material_var_flag(MATERIAL_VAR_IGNOREZ, false);
 		interfaces::model_render->override_material(mat);
-	}
 
+	}
 	if (config_system.item.sleeve_chams && strstr(model_name, "sleeve")) {
 
 		interfaces::render_view->set_blend(config_system.item.clr_sleeve_chams[3]);
@@ -1229,17 +1032,15 @@ void c_visuals::glow() noexcept {
 		return;
 
 	for (size_t i = 0; i < interfaces::glow_manager->size; i++) {
-		auto &glow = interfaces::glow_manager->objects[i];
-
+		auto& glow = interfaces::glow_manager->objects[i];
 		if (glow.unused())
 			continue;
-
+		
 		auto glow_entity = reinterpret_cast<player_t*>(glow.entity);
 		auto client_class = glow_entity->client_class();
-
 		if (!glow_entity || glow_entity->dormant())
 			continue;
-
+		
 		auto is_enemy = glow_entity->team() != local_player->team();
 		auto is_teammate = glow_entity->team() == local_player->team();
 
@@ -1248,75 +1049,43 @@ void c_visuals::glow() noexcept {
 			if (is_enemy && config_system.item.visuals_glow_enemy) {
 				glow.set(config_system.item.clr_glow[0], config_system.item.clr_glow[1], config_system.item.clr_glow[2], config_system.item.clr_glow[3]);
 			}
-
 			else if (is_teammate && config_system.item.visuals_glow_team) {
 				glow.set(config_system.item.clr_glow_team[0], config_system.item.clr_glow_team[1], config_system.item.clr_glow_team[2], config_system.item.clr_glow_team[3]);
 			}
 			break;
 		case class_ids::cplantedc4:
+		case class_ids::cbaseanimating:
+		case class_ids::cbaseanimatingoverlay:
 			if (config_system.item.visuals_glow_planted) {
 				glow.set(config_system.item.clr_glow_planted[0], config_system.item.clr_glow_planted[1], config_system.item.clr_glow_planted[2], config_system.item.clr_glow_planted[3]);
 			}
 			break;
-		}	
-
+			//	grenedes
+		case class_ids::chegrenade:
+		case class_ids::cflashbang:
+		case class_ids::cmolotovgrenade:
+		case class_ids::cmolotovprojectile:
+		case class_ids::cincendiarygrenade:
+		case class_ids::cdecoygrenade:
+		case class_ids::cdecoyprojectile:
+		case class_ids::csmokegrenade:
+		case class_ids::csmokegrenadeprojectile:
+			if (config_system.item.visuals_glow_nades) {
+				glow.set(config_system.item.clr_glow_dropped_nade[0], config_system.item.clr_glow_dropped_nade[1], config_system.item.clr_glow_dropped_nade[2], config_system.item.clr_glow_dropped_nade[3]);
+			}
+			break;
+			//	weapons
+		case class_ids::cak47:
+		case class_ids::cc4:
+		case class_ids::cdeagle:
+			if (config_system.item.visuals_glow_weapons) {
+				glow.set(config_system.item.clr_glow_dropped[0], config_system.item.clr_glow_dropped[1], config_system.item.clr_glow_dropped[2], config_system.item.clr_glow_dropped[3]);
+			}
+			break;
+		}
 		if (strstr(client_class->network_name, ("CWeapon")) && config_system.item.visuals_glow_weapons) {
 			glow.set(config_system.item.clr_glow_dropped[0], config_system.item.clr_glow_dropped[1], config_system.item.clr_glow_dropped[2], config_system.item.clr_glow_dropped[3]);
 		}
-
-		else if (client_class->class_id == class_ids::cak47 && config_system.item.visuals_glow_weapons) {
-			glow.set(config_system.item.clr_glow_dropped[0], config_system.item.clr_glow_dropped[1], config_system.item.clr_glow_dropped[2], config_system.item.clr_glow_dropped[3]);
-		}
-
-		else if (client_class->class_id == class_ids::cc4 && config_system.item.visuals_glow_weapons) {
-			glow.set(config_system.item.clr_glow_dropped[0], config_system.item.clr_glow_dropped[1], config_system.item.clr_glow_dropped[2], config_system.item.clr_glow_dropped[3]);
-		}
-
-		else if (client_class->class_id == class_ids::cdeagle && config_system.item.visuals_glow_weapons) {
-			glow.set(config_system.item.clr_glow_dropped[0], config_system.item.clr_glow_dropped[1], config_system.item.clr_glow_dropped[2], config_system.item.clr_glow_dropped[3]);
-		}
-		
-		// grendes
-		else if (client_class->class_id == class_ids::chegrenade && config_system.item.visuals_glow_nades) {
-			glow.set(config_system.item.clr_glow_dropped_nade[0], config_system.item.clr_glow_dropped_nade[1], config_system.item.clr_glow_dropped_nade[2], config_system.item.clr_glow_dropped_nade[3]);
-		}
-		else if (client_class->class_id == class_ids::cmolotovgrenade && config_system.item.visuals_glow_nades) {
-			glow.set(config_system.item.clr_glow_dropped_nade[0], config_system.item.clr_glow_dropped_nade[1], config_system.item.clr_glow_dropped_nade[2], config_system.item.clr_glow_dropped_nade[3]);
-		}
-		else if (client_class->class_id == class_ids::cmolotovprojectile && config_system.item.visuals_glow_nades) {
-			glow.set(config_system.item.clr_glow_dropped_nade[0], config_system.item.clr_glow_dropped_nade[1], config_system.item.clr_glow_dropped_nade[2], config_system.item.clr_glow_dropped_nade[3]);
-		}
-		else if (client_class->class_id == class_ids::cincendiarygrenade && config_system.item.visuals_glow_nades) {
-			glow.set(config_system.item.clr_glow_dropped_nade[0], config_system.item.clr_glow_dropped_nade[1], config_system.item.clr_glow_dropped_nade[2], config_system.item.clr_glow_dropped_nade[3]);
-		}
-		else if (client_class->class_id == class_ids::cflashbang && config_system.item.visuals_glow_nades) {
-			glow.set(config_system.item.clr_glow_dropped_nade[0], config_system.item.clr_glow_dropped_nade[1], config_system.item.clr_glow_dropped_nade[2], config_system.item.clr_glow_dropped_nade[3]);
-		}
-		else if (client_class->class_id == class_ids::cdecoygrenade && config_system.item.visuals_glow_nades) {
-			glow.set(config_system.item.clr_glow_dropped_nade[0], config_system.item.clr_glow_dropped_nade[1], config_system.item.clr_glow_dropped_nade[2], config_system.item.clr_glow_dropped_nade[3]);
-		}
-		else if (client_class->class_id == class_ids::cdecoyprojectile && config_system.item.visuals_glow_nades) {
-			glow.set(config_system.item.clr_glow_dropped_nade[0], config_system.item.clr_glow_dropped_nade[1], config_system.item.clr_glow_dropped_nade[2], config_system.item.clr_glow_dropped_nade[3]);
-		}
-		else if (client_class->class_id == class_ids::cbasecsgrenade && config_system.item.visuals_glow_nades) {
-			glow.set(config_system.item.clr_glow_dropped_nade[0], config_system.item.clr_glow_dropped_nade[1], config_system.item.clr_glow_dropped_nade[2], config_system.item.clr_glow_dropped_nade[3]);
-		}
-		else if (client_class->class_id == class_ids::cbasecsgrenadeprojectile && config_system.item.visuals_glow_nades) {
-			glow.set(config_system.item.clr_glow_dropped_nade[0], config_system.item.clr_glow_dropped_nade[1], config_system.item.clr_glow_dropped_nade[2], config_system.item.clr_glow_dropped_nade[3]);
-		}
-		else if (client_class->class_id == class_ids::cbasegrenade && config_system.item.visuals_glow_nades) {
-			glow.set(config_system.item.clr_glow_dropped_nade[0], config_system.item.clr_glow_dropped_nade[1], config_system.item.clr_glow_dropped_nade[2], config_system.item.clr_glow_dropped_nade[3]);
-		}
-		else if (client_class->class_id == class_ids::csmokegrenade && config_system.item.visuals_glow_nades) {
-			glow.set(config_system.item.clr_glow_dropped_nade[0], config_system.item.clr_glow_dropped_nade[1], config_system.item.clr_glow_dropped_nade[2], config_system.item.clr_glow_dropped_nade[3]);
-		}
-		else if (client_class->class_id == class_ids::csmokegrenadeprojectile && config_system.item.visuals_glow_nades) {
-			glow.set(config_system.item.clr_glow_dropped_nade[0], config_system.item.clr_glow_dropped_nade[1], config_system.item.clr_glow_dropped_nade[2], config_system.item.clr_glow_dropped_nade[3]);
-		}
-		else if (client_class->class_id == class_ids::particlesmokegrenade && config_system.item.visuals_glow_nades) {
-			glow.set(config_system.item.clr_glow_dropped_nade[0], config_system.item.clr_glow_dropped_nade[1], config_system.item.clr_glow_dropped_nade[2], config_system.item.clr_glow_dropped_nade[3]);
-		}
-
 	}
 }
 
@@ -1325,7 +1094,6 @@ void c_visuals::skeleton(player_t* entity) noexcept {
 		return;
 
 	auto p_studio_hdr = interfaces::model_info->get_studio_model(entity->model());
-
 	if (!p_studio_hdr)
 		return;
 
@@ -1333,7 +1101,6 @@ void c_visuals::skeleton(player_t* entity) noexcept {
 
 	for (int i = 0; i < p_studio_hdr->bones_count; i++) {
 		studio_bone_t* bone = p_studio_hdr->bone(i);
-
 		if (!bone)
 			return;
 
@@ -1347,59 +1114,20 @@ void c_visuals::skeleton(player_t* entity) noexcept {
 	}
 }
 
-void c_visuals::backtrack_skeleton(player_t* entity) noexcept {  //normal skeleton need records
+void c_visuals::backtrack_skeleton(player_t* entity) noexcept { 
 	if (!config_system.item.backtrack_skeleton)
 		return;
-
-	auto local_player = reinterpret_cast<player_t*>(interfaces::entity_list->get_client_entity(interfaces::engine->get_local_player()));
-	if (!local_player)
-		return;
-
-	auto p_studio_hdr = interfaces::model_info->get_studio_model(entity->model());
-	if (!p_studio_hdr)
-		return;
-
-	if (p_studio_hdr) {
-
-		matrix_t matrix[128];
-
-		if (entity->setup_bones(matrix, 128, 0x7FF00, interfaces::globals->cur_time))
-		{
-			for (int i = 0; i < p_studio_hdr->bones_count; i++){
-
-				studio_bone_t* bone = p_studio_hdr->bone(i);
-				if (!bone || !(bone->flags & 256) || bone->parent == -1)
-					continue;
-
-				vec3_t vBonePos1;
-				if (!math.world_to_screen(vec3_t(matrix[i][0][3], matrix[i][1][3],matrix[i][2][3]), vBonePos1))
-					continue;
-
-				vec3_t vBonePos2;
-				if (!math.world_to_screen(vec3_t(matrix[bone->parent][0][3],matrix[bone->parent][1][3], matrix[bone->parent][2][3]), vBonePos2))
-					continue;
-
-				render.draw_line((int)vBonePos1.x, (int)vBonePos1.y, (int)vBonePos2.x, (int)vBonePos2.y, color(255, 55, 255));
-			}
-		}
-	}
 }
 
 void c_visuals::backtrack_chams(IMatRenderContext* ctx, const draw_model_state_t& state, const model_render_info_t& info) {
-	if (!config_system.item.backtrack_visualize)
-		return;
-
-	if (!interfaces::engine->is_connected() && !interfaces::engine->is_in_game())
+	if (!config_system.item.backtrack_visualize || !interfaces::engine->is_connected() && !interfaces::engine->is_in_game())
 		return;
 
 	auto model_name = interfaces::model_info->get_model_name((model_t*)info.model);
 
 	auto local_player = reinterpret_cast<player_t*>(interfaces::entity_list->get_client_entity(interfaces::engine->get_local_player()));
-	if (!local_player)
-		return;
-
 	auto entity = reinterpret_cast<player_t*>(interfaces::entity_list->get_client_entity(info.entity_index));
-	if (!entity)
+	if (!local_player|| !local_player->is_alive() ||!entity|| !local_player->can_see_player_pos(entity, entity->get_eye_pos()))
 		return;
 
 	static auto draw_model_execute_fn = reinterpret_cast<hooks::draw_model_execute_fn>(hooks::modelrender_hook->get_original(21));
@@ -1412,17 +1140,14 @@ void c_visuals::backtrack_chams(IMatRenderContext* ctx, const draw_model_state_t
 				auto record = &records[info.entity_index];
 				if (!record)
 					return;
-				
+
 				if (record && record->size() && backtrack.valid_tick(record->front().simulation_time)) {
-					vec3_t previous_screenpos;
-					vec3_t screen_pos;
-					render.draw_line(screen_pos.x, screen_pos.y, previous_screenpos.x, previous_screenpos.y, color(255, 255, 255, 255));
 					draw_model_execute_fn(interfaces::model_render, ctx, state, info, record->back().matrix);
 					interfaces::model_render->override_material(nullptr);
-				}	
+				}
 			}
 		}
-	}
+	}	
 }
 
 void c_visuals::viewmodel_modulate(const model_render_info_t& info) {
@@ -1432,10 +1157,7 @@ void c_visuals::viewmodel_modulate(const model_render_info_t& info) {
 	auto model_name = interfaces::model_info->get_model_name((model_t*)info.model);
 
 	auto local_player = reinterpret_cast<player_t*>(interfaces::entity_list->get_client_entity(interfaces::engine->get_local_player()));
-	if (!local_player)
-		return;
-
-	if (!local_player->is_alive())
+	if (!local_player|| local_player->is_alive())
 		return;
 
 	if (strstr(model_name, "sleeve")) {

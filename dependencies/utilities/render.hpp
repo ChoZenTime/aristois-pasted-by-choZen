@@ -24,17 +24,20 @@ class c_render {
 public:
 	unsigned long watermark_font;
 	unsigned long name_font;
+	unsigned long name_font_big;
 	unsigned long icon_font;
 
 public:
 	void setup_fonts() {
 		watermark_font = interfaces::surface->font_create();
 		name_font = interfaces::surface->font_create();
+		name_font_big = interfaces::surface->font_create();
 		icon_font = interfaces::surface->font_create();
 
 		interfaces::surface->set_font_glyph(watermark_font, "Tahoma", 12, 500, 0, 0, font_flags::fontflag_dropshadow);
 		interfaces::surface->set_font_glyph(name_font, "Verdana", 12, 500, 0, 0, font_flags::fontflag_antialias | font_flags::fontflag_dropshadow);
-		interfaces::surface->set_font_glyph(icon_font, "AstriumWep", 16, 400, 0, 0, font_flags::fontflag_antialias | font_flags::fontflag_dropshadow);
+		interfaces::surface->set_font_glyph(name_font_big, "Verdana", 15, 500, 0, 0, font_flags::fontflag_antialias | font_flags::fontflag_dropshadow);
+		interfaces::surface->set_font_glyph(icon_font, "AstriumWep", 15, 300, 0, 0, font_flags::fontflag_antialias | font_flags::fontflag_dropshadow);
 		//interfaces::surface->set_font_glyph(icon_font, "Counter-Strike", 24, 400, 0, 0, font_flags::fontflag_antialias | font_flags::fontflag_dropshadow);
 
 		printf("Render initialized!\n");

@@ -56,6 +56,7 @@ enum entity_flags {
 	fl_transragdoll = (1 << 29),
 	fl_unblockable_by_player = (1 << 30)
 };
+
 enum item_definition_indexes {
 	WEAPON_NONE = 0,
 	WEAPON_DEAGLE,
@@ -144,6 +145,21 @@ enum item_definition_indexes {
 	GLOVE_HYDRA = 5035
 };
 
+enum data_update_type_t {
+	DATA_UPDATE_CREATED = 0,
+	DATA_UPDATE_DATATABLE_CHANGED,
+};
+
+enum  observer_mode_t {
+	OBS_MODE_NONE = 0,
+	OBS_MODE_DEATHCAM = 1,
+	OBS_MODE_FREEZECAM = 2,
+	OBS_MODE_FIXED = 3,
+	OBS_MODE_IN_EYE = 4,
+	OBS_MODE_CHASE = 5,
+	OBS_MODE_ROAMING = 6
+};
+
 class entity_t {
 public:
 	void* animating() {
@@ -230,7 +246,7 @@ public:
 	NETVAR("DT_BasePlayer", "m_vecViewOffset[0]", view_offset, vec3_t);
 	NETVAR("DT_CSPlayer", "m_iTeamNum", team, int);
 	NETVAR("DT_BaseEntity", "m_bSpotted", spotted, bool);
-
+	NETVAR("DT_BaseAttributableItem", "m_iItemDefinitionIndex", entity_item_definition_index, short);
 };
 
 class econ_view_item_t {
@@ -250,11 +266,6 @@ public:
 	NETVAR("DT_BaseViewModel", "m_hOwner", m_howner, int);	
 };
 
-enum data_update_type_t {
-	DATA_UPDATE_CREATED = 0,
-	DATA_UPDATE_DATATABLE_CHANGED,
-};
-
 class attributable_item_t : public entity_t {
 public:
 	NETVAR("DT_BaseViewModel", "m_nModelIndex", model_index, int);
@@ -270,8 +281,7 @@ public:
 	NETVAR("DT_BaseAttributableItem", "m_iItemIDHigh", item_id_high, int); //jakby crash to wez offset z hazedumpera
 	NETVAR("DT_BaseAttributableItem", "m_iAccountID", acc_id, int);
 
-	void net_pre_data_update(int update_type)
-	{
+	void net_pre_data_update(int update_type){
 		using original_fn = void(__thiscall*)(void*, int);
 		return (*(original_fn * *)networkable())[6](networkable(), update_type);
 	}
@@ -286,14 +296,12 @@ public:
 		return (*(original_fn * *)networkable())[13](networkable());
 	}
 
-
 	void set_model_index(int index) {
 		using original_fn = void(__thiscall*)(void*, int);
 		return (*(original_fn * *)this)[75](this, index);
 	}
 
-	base_view_model* get_view_model()
-	{
+	base_view_model* get_view_model(){
 		return (base_view_model*)(DWORD)this;
 	}
 
@@ -392,13 +400,14 @@ public:
 		return (char*)((uintptr_t)this + (netvar_manager::get_net_var(netvar_manager::fnv::hash("DT_BasePlayer"), netvar_manager::fnv::hash("m_szLastPlaceName"))));
 	}
 	
-	UINT* get_weapons()
-	{
-		return (UINT*)((DWORD)this + (netvar_manager::get_net_var(netvar_manager::fnv::hash("DT_CSPlayer"), netvar_manager::fnv::hash("m_hMyWeapons"))));
-	}
 	UINT* get_wearables()
 	{
 		return (UINT*)((DWORD)this + (netvar_manager::get_net_var(netvar_manager::fnv::hash("DT_CSPlayer"), netvar_manager::fnv::hash("m_hMyWearables"))));
+	}
+
+	observer_mode_t* observer_mode()
+	{
+		return (observer_mode_t*)((uintptr_t)this +(netvar_manager::get_net_var(netvar_manager::fnv::hash("DT_BasePlayer"), netvar_manager::fnv::hash("m_iObserverMode"))));
 	}
 	
 	bool has_c4() {

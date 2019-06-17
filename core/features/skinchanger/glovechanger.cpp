@@ -29,7 +29,11 @@ static auto make_glove(int entry, int serial) -> attributable_item_t*{
 }
 
 bool c_glovechanger::apply_glove_model(attributable_item_t* glove, const char* model) noexcept {
+	player_info_t info;
+	interfaces::engine->get_player_info(interfaces::engine->get_local_player(), &info);
+	glove->acc_id() = info.xuidlow;
 	*reinterpret_cast<int*>(uintptr_t(glove) + 0x64) = -1;
+
 	return true;
 }
 
@@ -187,7 +191,7 @@ void c_glovechanger::run() noexcept {
 				apply_glove_skin(glove, GLOVE_HYDRA, config_system.item.paint_kit_index_glove, index_hydra, 3, g_wear);
 				break;
 			}
-			
+						
 			glove->item_id_high() = -1;
 			glove->fallback_seed() = 0;
 			glove->fallback_stattrak() = -1;

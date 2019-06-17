@@ -182,7 +182,7 @@ void c_menu::run() {
 							ImGui::EndCombo();
 							ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 10);
 						}
-						ImGui::SliderInt("trigger delay", &config_system.item.trigger_delay, 0, 20);
+						ImGui::SliderInt("trigger delay", &config_system.item.trigger_delay, 1, 50);
 						ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 10);
 						ImGui::Checkbox("trigger recoil", &config_system.item.trigger_recoil);
 						ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 10);
@@ -423,16 +423,15 @@ void c_menu::run() {
 					ImGui::Checkbox("teammate (behind wall)", &config_system.item.vis_chams_invis_teammate);
 					ImGui::ColorEdit4("teammate (behind wall) color", config_system.item.clr_chams_invis_teammate, ImGuiColorEditFlags_NoInputs);
 					
-					ImGui::Checkbox("weapon_chams", &config_system.item.weapon_chams);
-					ImGui::ColorEdit4("weapon_chams color", config_system.item.clr_weapon_chams, ImGuiColorEditFlags_NoInputs);
-					ImGui::Checkbox("hand_chams", &config_system.item.hand_chams);
-					ImGui::ColorEdit4("hand_chams color", config_system.item.clr_hand_chams, ImGuiColorEditFlags_NoInputs);
-					ImGui::Checkbox("sleeve_chams", &config_system.item.sleeve_chams);
-					ImGui::ColorEdit4("sleeve_chams color", config_system.item.clr_sleeve_chams, ImGuiColorEditFlags_NoInputs);
+					ImGui::Checkbox("weapon chams", &config_system.item.weapon_chams);
+					ImGui::ColorEdit4("weapon chams color", config_system.item.clr_weapon_chams, ImGuiColorEditFlags_NoInputs);
+					ImGui::Checkbox("hand chams", &config_system.item.hand_chams);
+					ImGui::ColorEdit4("hand chams color", config_system.item.clr_hand_chams, ImGuiColorEditFlags_NoInputs);
+					ImGui::Checkbox("sleeve chams", &config_system.item.sleeve_chams);
+					ImGui::ColorEdit4("sleeve chams color", config_system.item.clr_sleeve_chams, ImGuiColorEditFlags_NoInputs);
 					ImGui::Spacing();
 					ImGui::Checkbox("backtrack", &config_system.item.backtrack_visualize);
-					
-
+			
 				}
 				ImGui::EndChild(true);
 

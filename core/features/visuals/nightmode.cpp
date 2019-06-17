@@ -24,7 +24,6 @@ void c_nightmode::apply() noexcept {
 	}
 
 	auto local_player = reinterpret_cast<player_t*>(interfaces::entity_list->get_client_entity(interfaces::engine->get_local_player()));
-
 	if (!local_player)
 		return;
 
@@ -58,7 +57,6 @@ void c_nightmode::remove() noexcept {
 	}
 
 	auto local_player = reinterpret_cast<player_t*>(interfaces::entity_list->get_client_entity(interfaces::engine->get_local_player()));
-
 	if (!local_player)
 		return;
 

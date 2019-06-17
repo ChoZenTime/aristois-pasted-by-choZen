@@ -2,6 +2,7 @@
 #include "../misc/logs.hpp"
 #include "../misc/hitmarker.hpp"
 #include "../visuals/sound.hpp"
+#include "../visuals/visuals.hpp"
 #include "../aimbot/aimbot.hpp"
 
 #pragma comment(lib, "Winmm.lib")
@@ -28,6 +29,7 @@ void c_hooked_events::fire_game_event(i_game_event* event) noexcept {
 	else if (!strcmp(event_name, "player_death")) {
 		aimbot.event_player_death(event);
 	}
+	
 }
 
 int c_hooked_events::get_event_debug_id(void) noexcept {

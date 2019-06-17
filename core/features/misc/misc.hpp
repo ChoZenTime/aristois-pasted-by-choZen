@@ -3,10 +3,12 @@
 
 class c_misc {
 public:
+	std::vector<int> get_observervators(int playerid) noexcept;
+	color cl_player_obs;
 	void remove_smoke() noexcept;
 	void remove_flash() noexcept;
 	void rank_reveal() noexcept;
-	void remove_scope() noexcept;
+	void remove_scope() noexcept;	
 	void spectators() noexcept;
 	void watermark() noexcept;
 	void clantag_spammer() noexcept;
@@ -14,7 +16,6 @@ public:
 	void disable_post_processing() noexcept;
 	void recoil_crosshair() noexcept;
 	void force_crosshair() noexcept;
-	void nade_tray() noexcept;
 private:
 };
 

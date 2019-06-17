@@ -9,7 +9,6 @@ c_aimbot aimbot;
 
 int c_aimbot::get_nearest_bone(player_t* entity, c_usercmd* user_cmd) noexcept {
 	auto local_player = reinterpret_cast<player_t*>(interfaces::entity_list->get_client_entity(interfaces::engine->get_local_player()));
-
 	if (!local_player)
 		return false;
 
@@ -178,7 +177,6 @@ void c_aimbot::weapon_settings(weapon_t* weapon) noexcept {
 
 int c_aimbot::find_target(c_usercmd* user_cmd) noexcept {
 	auto local_player = reinterpret_cast<player_t*>(interfaces::entity_list->get_client_entity(interfaces::engine->get_local_player()));
-
 	if (!local_player)
 		return false;
 
@@ -209,12 +207,10 @@ void c_aimbot::event_player_death(i_game_event* event) noexcept {
 		return;
 
 	auto local_player = reinterpret_cast<player_t*>(interfaces::entity_list->get_client_entity(interfaces::engine->get_local_player()));
-
 	if (!local_player || !local_player->is_alive())
 		return;
 
 	auto attacker = interfaces::entity_list->get_client_entity(interfaces::engine->get_player_for_user_id(event->get_int("attacker")));
-
 	if (!attacker)
 		return;
 
@@ -227,12 +223,10 @@ void c_aimbot::auto_pistol(c_usercmd* user_cmd) {
 		return;
 
 	auto local_player = reinterpret_cast<player_t*>(interfaces::entity_list->get_client_entity(interfaces::engine->get_local_player()));
-
 	if (!local_player)
 		return;
 
 	auto weapon = local_player->active_weapon();
-
 	if (!weapon)
 		return;
 
@@ -252,21 +246,25 @@ void c_aimbot::auto_pistol(c_usercmd* user_cmd) {
 void c_aimbot::rcs_standalone(c_usercmd* user_cmd) noexcept {
 	if (!config_system.item.rcs_standalone)
 		return;
-
+	
 	auto local_player = reinterpret_cast<player_t*>(interfaces::entity_list->get_client_entity(interfaces::engine->get_local_player()));
 	if (!local_player)
 		return;
-
+	
+	auto weapon = local_player->active_weapon();
+	if (!weapon || !weapon->clip1_count() || is_bomb(weapon) || is_knife(weapon) || is_grenade(weapon))
+		return;
+	
 	static vec3_t old_punch = { 0.0f, 0.0f, 0.0f };
-	auto aim_punch = local_player->aim_punch_angle() * 2;
-
-	rcs_x = config_system.item.rcs_standalone_x;
-	rcs_y = config_system.item.rcs_standalone_y;
+	auto recoil_scale = interfaces::console->get_convar("weapon_recoil_scale");
+	vec3_t aim_punch = local_player->aim_punch_angle() * recoil_scale->get_float();
 
 	aim_punch.x *= rcs_x;
 	aim_punch.y *= rcs_y;
+	rcs_x = config_system.item.rcs_standalone_x;
+	rcs_y = config_system.item.rcs_standalone_y;
 
-	auto rcs = user_cmd->viewangles - (aim_punch - old_punch);
+	auto rcs = user_cmd->viewangles += (old_punch - aim_punch);
 	interfaces::engine->set_view_angles(rcs);
 
 	old_punch = aim_punch;
@@ -274,7 +272,6 @@ void c_aimbot::rcs_standalone(c_usercmd* user_cmd) noexcept {
 
 void c_aimbot::run(c_usercmd* user_cmd) noexcept {
 	auto local_player = reinterpret_cast<player_t*>(interfaces::entity_list->get_client_entity(interfaces::engine->get_local_player()));
-
 	if (!local_player)
 		return;
 
@@ -322,7 +319,6 @@ void c_aimbot::run(c_usercmd* user_cmd) noexcept {
 				break;
 			}
 			
-
 			angle /= aim_smooth;
 			user_cmd->viewangles += angle;
 

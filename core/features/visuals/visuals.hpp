@@ -3,6 +3,7 @@
 
 class c_visuals {
 public:
+	color grenade_color;
 	void run() noexcept;
 	void entity_esp(player_t* entity) noexcept;
 	void skeleton(player_t* entity) noexcept;

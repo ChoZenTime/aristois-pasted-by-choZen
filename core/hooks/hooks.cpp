@@ -163,7 +163,6 @@ bool __stdcall hooks::create_move(float frame_time, c_usercmd* user_cmd) {
 		misc.recoil_crosshair();
 		misc.force_crosshair();
 		misc.rank_reveal();
-		misc.nade_tray();
 		nade_pred.trace(user_cmd);
 
 		//legitbot and prediction stuff

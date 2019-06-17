@@ -1,3 +1,31 @@
-﻿  visuals.cpp
+﻿  aimbot.cpp
+  trigger_simple.cpp
+  backtrack.cpp
+  damage_indicator.cpp
+  events.cpp
+  hitmarker.cpp
+  logs.cpp
+  misc.cpp
+  movement.cpp
+  prediction.cpp
+  nade_pred.cpp
+  glovechanger.cpp
+  knifehook.cpp
+  parser.cpp
+  skinchanger.cpp
+  nightmode.cpp
+  sound.cpp
+  visuals.cpp
+  hooks.cpp
+  main.cpp
+  Code wird generiert...
+  Kompilieren...
+  config.cpp
+  menu.cpp
+  interfaces.cpp
+  math.cpp
+  hook.cpp
+  utilities.cpp
+  Code wird generiert...
   LINK : /LTCG wurde angegeben, es ist jedoch keine Codegenerierung erforderlich. Entfernen Sie /LTCG aus der Linkbefehlszeile, um die Linkerleistung zu erhöhen.
   csgo-cheat.vcxproj -> C:\Users\panic\Desktop\aristois-legit-3010519 glovews - Kopie - Kopie\.\output\debug\cheat.dll

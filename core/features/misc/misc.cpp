@@ -35,7 +35,6 @@ void c_misc::remove_flash() noexcept {
 		return;
 
 	auto local_player = reinterpret_cast<player_t*>(interfaces::entity_list->get_client_entity(interfaces::engine->get_local_player()));
-
 	if (!local_player)
 		return;
 
@@ -59,7 +58,6 @@ void c_misc::remove_scope() noexcept {
 		return;
 
 	auto local_player = reinterpret_cast<player_t*>(interfaces::entity_list->get_client_entity(interfaces::engine->get_local_player()));
-
 	if (!local_player)
 		return;
 
@@ -72,6 +70,48 @@ void c_misc::remove_scope() noexcept {
 	interfaces::surface->draw_line(0, h / 2, w, h / 2);
 	interfaces::surface->draw_line(w / 2, 0, w / 2, h);
 }
+
+std::vector<int> c_misc::get_observervators(int playerid) noexcept {
+	std::vector<int> list;
+
+	if (!interfaces::engine->is_connected() && !interfaces::engine->is_in_game())
+		return list;
+
+	auto player = reinterpret_cast<player_t*>(interfaces::entity_list->get_client_entity(playerid));
+	if (!player)
+		return list;
+
+	if (!player->is_alive())
+	{
+		auto observer_target = reinterpret_cast<player_t*>(interfaces::entity_list->get_client_entity_handle(player->observer_target()));
+		if (!observer_target)
+			return list;
+
+		player = observer_target;
+	}
+
+	for (int i = 0; i < interfaces::entity_list->get_highest_index(); i++)
+	{
+		auto entity = reinterpret_cast<player_t*>(interfaces::entity_list->get_client_entity(i));
+		if (!entity)
+			continue;
+
+		if (entity->dormant() || entity->is_alive())
+			continue;
+
+		auto observer_target = reinterpret_cast<player_t*>(interfaces::entity_list->get_client_entity_handle(entity->observer_target()));
+		if (!observer_target)
+			continue;
+		if (player != observer_target)
+			continue;
+
+		list.push_back(i);
+	}
+
+	return list;
+}
+
+/*   old speclist works perfect only changed against a new one
 
 void c_misc::spectators() noexcept {
 	if (!config_system.item.spectators_list || !config_system.item.misc_enabled)
@@ -87,12 +127,10 @@ void c_misc::spectators() noexcept {
 	render.draw_text(width - 80, height / 2 - 10, render.name_font, "spectators", true, color(255, 255, 255));
 	for (int i = 0; i < interfaces::entity_list->get_highest_index(); i++) {
 		auto local_player = reinterpret_cast<player_t*>(interfaces::entity_list->get_client_entity(interfaces::engine->get_local_player()));
-
 		if (!local_player)
 			return;
 
 		auto entity = reinterpret_cast<player_t*>(interfaces::entity_list->get_client_entity(i));
-
 		if (!entity)
 			return;
 
@@ -119,11 +157,80 @@ void c_misc::spectators() noexcept {
 						player_info_t spectator_info;
 						interfaces::engine->get_player_info(i, &spectator_info);
 					
-						render.draw_text(width - 80, height / 2 + (10 * spectator_index), render.name_font, player_name.c_str() , true, color(255, 255, 255));
+						render.draw_text(width - 80, height / 2 + (10 * spectator_index), render.name_font_big, player_name.c_str() , true, color(255, 255, 255));
 						spectator_index++;
 					}
 				}
 			}
+		}
+	}
+} 
+*/
+
+void c_misc::spectators() noexcept {
+	if (!config_system.item.spectators_list)
+		return;
+
+	if (!interfaces::engine->is_connected() && !interfaces::engine->is_in_game())
+		return;
+
+	auto local_player = reinterpret_cast<player_t*>(interfaces::entity_list->get_client_entity(interfaces::engine->get_local_player()));
+	if (!local_player)
+		return;
+
+	int spectator_index = 0;
+	int width, height;
+	interfaces::engine->get_screen_size(width, height);
+
+	render.draw_text(width - 420, height / 15 - 10, render.name_font, "pov observer", true, color(255, 255, 255));
+	for (int playerid : get_observervators(interfaces::engine->get_local_player())) {
+		if (playerid == interfaces::engine->get_local_player())
+			continue;
+
+		auto player_check = reinterpret_cast<player_t*>(interfaces::entity_list->get_client_entity(playerid));
+		if (!player_check)
+			continue;
+
+		player_info_t entityinfo;
+		interfaces::engine->get_player_info(playerid, &entityinfo);
+		if (entityinfo.fakeplayer)
+			continue;
+
+		std::string player_name = entityinfo.name;
+
+		if (player_name != "") {		
+			switch (*player_check->observer_mode()){
+			case observer_mode_t::OBS_MODE_NONE:
+				player_name.append("");
+				cl_player_obs = color(0, 0, 0);
+				break;
+			case observer_mode_t::OBS_MODE_DEATHCAM:
+				player_name.append(" - deathcam");
+				cl_player_obs = color(255, 255, 0);
+				break;
+			case observer_mode_t::OBS_MODE_FREEZECAM:
+				player_name.append(" - freezecam");
+				cl_player_obs = color(50, 205, 50);
+				break;
+			case observer_mode_t::OBS_MODE_FIXED:
+				player_name.append(" - fixed");
+				cl_player_obs = color(255, 165, 0);
+				break;
+			case observer_mode_t::OBS_MODE_IN_EYE:
+				player_name.append(" - perspective");
+				cl_player_obs = color(255, 255, 255);
+				break;
+			case observer_mode_t::OBS_MODE_CHASE:
+				player_name.append(" - 3rd person");
+				cl_player_obs = color(0, 255, 255);
+				break;
+			case observer_mode_t::OBS_MODE_ROAMING:
+				player_name.append(" - free look");
+				cl_player_obs = color(255, 0, 0);
+				break;
+			}
+			render.draw_text(width - 420, height /15 + (10 * spectator_index), render.name_font_big, player_name.c_str(), true, cl_player_obs);
+			spectator_index++;
 		}
 	}
 }
@@ -207,7 +314,6 @@ void c_misc::force_crosshair() noexcept {
 		return;
 
 	auto local_player = reinterpret_cast<player_t*>(interfaces::entity_list->get_client_entity(interfaces::engine->get_local_player()));
-
 	if (!local_player)
 		return;
 
@@ -215,24 +321,6 @@ void c_misc::force_crosshair() noexcept {
 
 	if (local_player && local_player->health() > 0) {
 		weapon_debug_spread_show->set_value(local_player->is_scoped() || !config_system.item.force_crosshair ? 0 : 3);
-	}
-}
-
-void c_misc::nade_tray() noexcept {
-
-	if (!config_system.item.nade_pred){
-		auto sgt = interfaces::console->get_convar("sv_grenade_trajectory");
-		sgt->set_value(0);
-	}
-
-	float value = 0.1;
-	if (config_system.item.nade_pred){
-		auto sgt = interfaces::console->get_convar("sv_grenade_trajectory");
-		auto sgt_t = interfaces::console->get_convar("sv_grenade_trajectory_time");
-		auto sgt_t_t = interfaces::console->get_convar("sv_grenade_trajectory_thickness");
-		sgt->set_value(1);		
-		sgt_t->set_value(1);			
-		sgt_t_t->set_value(value);
 	}
 }
 
