@@ -246,7 +246,6 @@ public:
 	NETVAR("DT_BasePlayer", "m_vecViewOffset[0]", view_offset, vec3_t);
 	NETVAR("DT_CSPlayer", "m_iTeamNum", team, int);
 	NETVAR("DT_BaseEntity", "m_bSpotted", spotted, bool);
-	NETVAR("DT_BaseAttributableItem", "m_iItemDefinitionIndex", entity_item_definition_index, short);
 };
 
 class econ_view_item_t {
