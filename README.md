@@ -48,6 +48,6 @@ Press `END` key.
 ![image](https://imgur.com/X5vQfY2.png)
 ![image](https://imgur.com/Yhqxk4z.png)
 ![image](https://imgur.com/W3sz6rE.png)
-![image](https://gyazo.com/5ee4e492a9f61648d1be767b77501444)
+![image](https://imgur.com/9b2oJM0.png)
   
 my nickname is choZen on UC , Void and YouGame
