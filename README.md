@@ -19,7 +19,7 @@ Full project files for **aristois**, Counter-Strike: Global Offensive cheat base
 + added trigger/damage inticator			// thx tonti spuri
 + tested/added nullptr for bt chams
 + added speclist with OBS modes
-+ changed visual loop dropped weapon names show only if visible
++ changed visual loop dropped weapon names now with  if visible function
 + changed weapon esp  to a cleaner code 
 + added dropped weapon with icons 
 + changed code for weapon esp ,
