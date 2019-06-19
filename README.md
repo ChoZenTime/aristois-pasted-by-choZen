@@ -17,12 +17,19 @@ Full project files for **aristois**, Counter-Strike: Global Offensive cheat base
 + added ambient light						// thx smefs indigo 
 + added weapon/hand/sleeve chams			// thx tonti spuri
 + added trigger/damage inticator			// thx tonti spuri
-
 + tested/added nullptr for bt chams
++ added speclist with OBS modes
++ changed visual loop dropped weapon names show only if visible
++ changed weapon esp  to a cleaner code 
++ added dropped weapon with icons 
++ changed code for weapon esp ,
++ changed weapon/hand/sleeve chams code
++ added check for bomb esp --> defused/exploded = bomb esp off
++ added menu so for woldesp is a switch for dropped weapon esp name/icon
 
-++ please make/use new configs so it dosen´t crash etc on you
++ + please make/use new configs so it dosen´t crash etc on you
 
-+++ for weapon icon esp you need font --> astriumwep.ttf
++ + + for weapon icon esp you need font --> astriumwep.ttf
 
 
 ## FAQ
