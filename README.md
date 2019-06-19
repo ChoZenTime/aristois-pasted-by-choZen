@@ -2,7 +2,7 @@
 # aristois-pasted-by-choZen   
 ##  thx too kuciak666 for [aristois](https://github.com/designer1337/aristois-legit)
 
-Full project files for **aristois**, Counter-Strike: Global Offensive cheat based on [alpha's sdk](https://github.com/alphauc/sdk).
+project files for **aristois**,  "Counter-Strike: Global Offensive" cheat based on [alpha's sdk](https://github.com/alphauc/sdk).
 
 ## Changelog
 + completed skinlist						
