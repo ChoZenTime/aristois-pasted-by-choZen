@@ -1,5 +1,5 @@
 #include "misc.hpp"
-
+#include <vector>
 c_misc misc;
 
 void c_misc::remove_smoke() noexcept {
@@ -72,20 +72,17 @@ void c_misc::remove_scope() noexcept {
 }
 
 std::vector<int> c_misc::get_observervators(int playerid) noexcept {
-	std::vector<int> list;
-
-	if (!interfaces::engine->is_connected() && !interfaces::engine->is_in_game())
-		return list;
+	std::vector<int> spectators;
 
 	auto player = reinterpret_cast<player_t*>(interfaces::entity_list->get_client_entity(playerid));
 	if (!player)
-		return list;
+		return spectators;
 
 	if (!player->is_alive())
 	{
 		auto observer_target = reinterpret_cast<player_t*>(interfaces::entity_list->get_client_entity_handle(player->observer_target()));
 		if (!observer_target)
-			return list;
+			return spectators;
 
 		player = observer_target;
 	}
@@ -93,7 +90,7 @@ std::vector<int> c_misc::get_observervators(int playerid) noexcept {
 	for (int i = 0; i < interfaces::entity_list->get_highest_index(); i++)
 	{
 		auto entity = reinterpret_cast<player_t*>(interfaces::entity_list->get_client_entity(i));
-		if (!entity)
+		if (!entity || !entity->is_player())
 			continue;
 
 		if (entity->dormant() || entity->is_alive())
@@ -105,10 +102,10 @@ std::vector<int> c_misc::get_observervators(int playerid) noexcept {
 		if (player != observer_target)
 			continue;
 
-		list.push_back(i);
+		spectators.push_back(i);
 	}
 
-	return list;
+	return spectators;
 }
 
 /*   old speclist works perfect only changed against a new one
@@ -199,32 +196,32 @@ void c_misc::spectators() noexcept {
 		std::string player_name = entityinfo.name;
 
 		if (player_name != "") {		
-			switch (*player_check->observer_mode()){
-			case observer_mode_t::OBS_MODE_NONE:
-				player_name.append("");
-				cl_player_obs = color(0, 0, 0);
+			switch (player_check->observer_mode()){
+			case 0:
+				//player_name.append("");
+				//cl_player_obs = color(0, 0, 0);
 				break;
-			case observer_mode_t::OBS_MODE_DEATHCAM:
+			case 1:
 				player_name.append(" - deathcam");
 				cl_player_obs = color(255, 255, 0);
 				break;
-			case observer_mode_t::OBS_MODE_FREEZECAM:
+			case 2:
 				player_name.append(" - freezecam");
 				cl_player_obs = color(50, 205, 50);
 				break;
-			case observer_mode_t::OBS_MODE_FIXED:
+			case 3:
 				player_name.append(" - fixed");
 				cl_player_obs = color(255, 165, 0);
 				break;
-			case observer_mode_t::OBS_MODE_IN_EYE:
+			case 4:
 				player_name.append(" - perspective");
 				cl_player_obs = color(255, 255, 255);
 				break;
-			case observer_mode_t::OBS_MODE_CHASE:
+			case 5:
 				player_name.append(" - 3rd person");
 				cl_player_obs = color(0, 255, 255);
 				break;
-			case observer_mode_t::OBS_MODE_ROAMING:
+			case 6:
 				player_name.append(" - free look");
 				cl_player_obs = color(255, 0, 0);
 				break;
@@ -323,107 +320,3 @@ void c_misc::force_crosshair() noexcept {
 		weapon_debug_spread_show->set_value(local_player->is_scoped() || !config_system.item.force_crosshair ? 0 : 3);
 	}
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

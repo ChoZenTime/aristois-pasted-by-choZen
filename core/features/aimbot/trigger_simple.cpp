@@ -28,6 +28,10 @@ void c_trigger::trigger(c_usercmd* user_cmd) {
 	auto weapon = local_player->active_weapon();
 	if (!weapon || !weapon->clip1_count() || is_bomb(weapon) || is_knife(weapon) || is_grenade(weapon))
 		return;
+	
+	auto weapon_data = weapon->get_weapon_data();
+	if (!weapon_data)
+		return;
 
 	vec3_t src, dst, forward, crosshair_forward;
 	trace_t tr;
@@ -36,7 +40,7 @@ void c_trigger::trigger(c_usercmd* user_cmd) {
 
 	math.angle_vectors(user_cmd->viewangles, forward);
 
-	forward *= weapon->get_weapon_data()->range;
+	forward *= weapon_data->range;
 	filter.skip = local_player;
 	src = local_player->get_eye_pos();
 	dst = src + forward;

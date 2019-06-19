@@ -361,7 +361,9 @@ void c_menu::run() {
 						ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 4);
 						ImGui::Selectable(("planted bomb"), &config_system.item.bomb_planted, ImGuiSelectableFlags_::ImGuiSelectableFlags_DontClosePopups);
 						ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 4);
-						ImGui::Selectable(("dropped weapons"), &config_system.item.dropped_weapons, ImGuiSelectableFlags_::ImGuiSelectableFlags_DontClosePopups);
+						ImGui::Selectable(("dropped weapons name"), &config_system.item.dropped_weapons, ImGuiSelectableFlags_::ImGuiSelectableFlags_DontClosePopups);
+						ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 4);
+						ImGui::Selectable(("dropped weapons icon"), &config_system.item.dropped_weapons_icon, ImGuiSelectableFlags_::ImGuiSelectableFlags_DontClosePopups);
 						ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 4);
 						ImGui::Selectable(("projectiles"), &config_system.item.projectiles, ImGuiSelectableFlags_::ImGuiSelectableFlags_DontClosePopups);
 						ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 4);

@@ -72,3 +72,4 @@ void c_config::rename(size_t item, const char* newName) noexcept {
 void c_config::reset() noexcept {
 	item = { };
 }
+

@@ -58,7 +58,7 @@ void c_visuals::run() noexcept {
 			auto client_class = entity->client_class();
 			auto model_name = interfaces::model_info->get_model_name(entity->model());
 		
-			if (client_class->class_id == class_ids::cplantedc4) { //this should be fixed in better ways than this - designer				
+			if (client_class->class_id == class_ids::cplantedc4 && entity->c4_is_ticking() && !entity->c4_is_defused()) { 				
 				bomb_esp(entity);
 				bomb_defuse_esp(entity);			
 			}
@@ -197,222 +197,29 @@ void c_visuals::player_rendering(player_t* entity) noexcept {
 		auto red = config_system.item.clr_weapon[0] * 255;
 		auto green = config_system.item.clr_weapon[1] * 255;
 		auto blue = config_system.item.clr_weapon[2] * 255;
-		
+
 		auto redi = config_system.item.clr_weapon_icon[0] * 255;
 		auto greeni = config_system.item.clr_weapon_icon[1] * 255;
 		auto bluei = config_system.item.clr_weapon_icon[2] * 255;
 
 		auto weapon = entity->active_weapon();
-		auto weapon_data = weapon->get_weapon_data();
-		auto item_definition_index = weapon->item_definition_index();
-		if (!weapon || !weapon_data|| !item_definition_index)
+		if (!weapon)
+			return;
+		
+		auto weapon_name = weapon->weapon_name_definition();
+		if (!weapon_name)
+			return;
+		auto weapon_icon = weapon->weapon_icon_definition();
+		if (!weapon_icon)
 			return;
 
-		std::string weapon_name,weapon_icon;
-
-		switch (reinterpret_cast<weapon_t*>(weapon)->item_definition_index()){
-		case item_definition_indexes::WEAPON_NONE:
-			weapon_name = "";
-			weapon_icon = "";
-			break;
-		case item_definition_indexes::WEAPON_BAYONET:
-		case item_definition_indexes::WEAPON_KNIFE_FLIP:
-		case item_definition_indexes::WEAPON_KNIFE_GUT:
-		case item_definition_indexes::WEAPON_KNIFE_KARAMBIT:
-		case item_definition_indexes::WEAPON_KNIFE_M9_BAYONET:
-		case item_definition_indexes::WEAPON_KNIFE_TACTICAL:
-		case item_definition_indexes::WEAPON_KNIFE_FALCHION:
-		case item_definition_indexes::WEAPON_KNIFE_SURVIVAL_BOWIE:
-		case item_definition_indexes::WEAPON_KNIFE_BUTTERFLY:
-		case item_definition_indexes::WEAPON_KNIFE_PUSH:
-		case item_definition_indexes::WEAPON_KNIFE_URSUS:
-		case item_definition_indexes::WEAPON_KNIFE_GYPSY_JACKKNIFE:
-		case item_definition_indexes::WEAPON_KNIFE_STILETTO:
-		case item_definition_indexes::WEAPON_KNIFE_WIDOWMAKER:
-		case item_definition_indexes::WEAPON_KNIFE:
-			weapon_name = "knife";
-			weapon_icon = "]";
-			break;
-		case item_definition_indexes::WEAPON_KNIFE_T:
-			weapon_name = "knife";
-			weapon_icon = "[";
-			break;
-		case item_definition_indexes::WEAPON_DEAGLE:
-			weapon_name = "deagle";
-			weapon_icon = "A";
-			break;
-		case item_definition_indexes::WEAPON_AUG:
-			weapon_name = "aug";
-			weapon_icon = "U";
-			break;
-		case item_definition_indexes::WEAPON_G3SG1:
-			weapon_name = "g3sg1";
-			weapon_icon = "X";
-			break;
-		case item_definition_indexes::WEAPON_MAC10:
-			weapon_name = "mac10";
-			weapon_icon = "K";
-			break;
-		case item_definition_indexes::WEAPON_P90:
-			weapon_name = "p90";
-			weapon_icon = "P";
-			break;
-		case item_definition_indexes::WEAPON_SSG08:
-			weapon_name = "ssg08";
-			weapon_icon = "a";
-			break;
-		case item_definition_indexes::WEAPON_SCAR20:
-			weapon_name = "scar20";
-			weapon_icon = "Y";
-			break;
-		case item_definition_indexes::WEAPON_UMP45:
-			weapon_name = "ump45";
-			weapon_icon = "L";
-			break;
-		case item_definition_indexes::WEAPON_ELITE:
-			weapon_name = "elite";
-			weapon_icon = "B";
-			break;
-		case item_definition_indexes::WEAPON_FAMAS:
-			weapon_name = "famas";
-			weapon_icon = "R";
-			break;
-		case item_definition_indexes::WEAPON_FIVESEVEN:
-			weapon_name = "fiveseven";
-			weapon_icon = "C";
-			break;
-		case item_definition_indexes::WEAPON_GALILAR:
-			weapon_name = "galilar";
-			weapon_icon = "Q";
-			break;
-		case item_definition_indexes::WEAPON_M4A1_SILENCER:
-			weapon_name = "m4a1_s";
-			weapon_icon = "T";
-			break;
-		case item_definition_indexes::WEAPON_M4A1:
-			weapon_name = "m4a4";
-			weapon_icon = "S";
-			break;
-		case item_definition_indexes::WEAPON_P250:
-			weapon_name = "p250";
-			weapon_icon = "F";
-			break;
-		case item_definition_indexes::WEAPON_M249:
-			weapon_name = "m249";
-			weapon_icon = "g";
-			break;
-		case item_definition_indexes::WEAPON_XM1014:
-			weapon_name = "xm1014";
-			weapon_icon = "b";
-			break;
-		case item_definition_indexes::WEAPON_GLOCK:
-			weapon_name = "glock";
-			weapon_icon = "D";
-			break;
-		case item_definition_indexes::WEAPON_USP_SILENCER:
-			weapon_name = "usp_s";
-			weapon_icon = "G";
-			break;
-		case item_definition_indexes::WEAPON_HKP2000:
-			weapon_name = "p2000";
-			weapon_icon = "E";
-			break;
-		case item_definition_indexes::WEAPON_AK47:
-			weapon_name = "ak47";
-			weapon_icon = "W";
-			break;
-		case item_definition_indexes::WEAPON_AWP:
-			weapon_name = "awp";
-			weapon_icon = "Z";
-			break;
-		case item_definition_indexes::WEAPON_BIZON:
-			weapon_name = "bizon";
-			weapon_icon = "M";
-			break;
-		case item_definition_indexes::WEAPON_MAG7:
-			weapon_name = "mag7";
-			weapon_icon = "d";
-			break;
-		case item_definition_indexes::WEAPON_NEGEV:
-			weapon_name = "negev";
-			weapon_icon = "f";
-			break;
-		case item_definition_indexes::WEAPON_SAWEDOFF:
-			weapon_name = "sawedoff";
-			weapon_icon = "c";
-			break;
-		case item_definition_indexes::WEAPON_TEC9:
-			weapon_name = "tec9";
-			weapon_icon = "H";
-			break;
-		case item_definition_indexes::WEAPON_TASER:
-			weapon_name = "zeus";
-			weapon_icon = "h";
-			break;
-		case item_definition_indexes::WEAPON_NOVA:
-			weapon_name = "nova";
-			weapon_icon = "e";
-			break;
-		case item_definition_indexes::WEAPON_CZ75A:
-			weapon_name = "cz75";
-			weapon_icon = "I";
-			break;
-		case item_definition_indexes::WEAPON_SG556:
-			weapon_name = "sg553";
-			weapon_icon = "V";
-			break;
-		case item_definition_indexes::WEAPON_REVOLVER:
-			weapon_name = "revolver";
-			weapon_icon = "J";
-			break;
-		case item_definition_indexes::WEAPON_MP7:
-			weapon_name = "mp7";
-			weapon_icon = "N";
-			break;
-		case item_definition_indexes::WEAPON_MP9:
-			weapon_name = "mp9";
-			weapon_icon = "O";
-			break;
-		case item_definition_indexes::WEAPON_MP5SD:  //same icon as ump
-			weapon_name = "mp5";
-			weapon_icon = "L";
-			break;
-		case item_definition_indexes::WEAPON_C4:
-			weapon_name = "c4";
-			weapon_icon = "o";
-			break;
-		case item_definition_indexes::WEAPON_FRAG_GRENADE:
-			weapon_name = "grenade";
-			weapon_icon = "j";
-			break;
-		case item_definition_indexes::WEAPON_SMOKEGRENADE:
-			weapon_name = "smoke";
-			weapon_icon = "k";
-			break;
-		case item_definition_indexes::WEAPON_MOLOTOV:
-			weapon_name = "fire_molo";
-			weapon_icon = "l";
-			break;
-		case item_definition_indexes::WEAPON_INCGRENADE:
-			weapon_name = "fire_inc";
-			weapon_icon = "n";
-			break;
-		case item_definition_indexes::WEAPON_FLASHBANG:
-			weapon_name = "flash";
-			weapon_icon = "i";
-			break;
-		case item_definition_indexes::WEAPON_DECOY:
-			weapon_name = "decoy";
-			weapon_icon = "m";
-			break;
-		}
 		int h_index = 0;
 		if (config_system.item.player_weapon) {
-			render.draw_text(bbox.x + (bbox.w / 2), bbox.h + (10 * h_index) + bbox.y + 2, render.name_font, weapon_name.c_str(), true, color(red, green, blue, alpha[entity->index()]));
+			render.draw_text(bbox.x + (bbox.w / 2), bbox.h + (10 * h_index) + bbox.y + 2, render.name_font, weapon_name, true, color(red, green, blue, alpha[entity->index()]));
 			h_index++;
 		}
 		if (config_system.item.player_weapon_icon) {
-			render.draw_text(bbox.x + (bbox.w / 2), bbox.h + (10 * h_index) + bbox.y + 2, render.icon_font, weapon_icon.c_str(), true, color(redi, greeni, bluei, alpha[entity->index()]));
+			render.draw_text(bbox.x + (bbox.w / 2), bbox.h + (10 * h_index) + bbox.y + 2, render.icon_font, weapon_icon, true, color(redi, greeni, bluei, alpha[entity->index()]));
 			h_index++;
 		}
 	}
@@ -422,7 +229,7 @@ void c_visuals::dropped_weapons(player_t* entity) noexcept {
 	auto class_id = entity->client_class()->class_id;
 	auto model_name = interfaces::model_info->get_model_name(entity->model());
 	auto weapon = entity;
-	if (!entity || !weapon ||!class_id)
+	if (!entity || !weapon || !class_id)
 		return;
 
 	vec3_t dropped_weapon_position, dropped_weapon_origin;
@@ -433,7 +240,7 @@ void c_visuals::dropped_weapons(player_t* entity) noexcept {
 
 	if (!(entity->origin().x == 0 && entity->origin().y == 0 && entity->origin().z == 0)) { //ghetto fix sorry - designer
 		std::string weapon_name, weapon_icon;
-		if (config_system.item.dropped_weapons) {
+		if (config_system.item.dropped_weapons || config_system.item.dropped_weapons_icon) {
 
 			if (class_id == class_ids::cc4) {
 				weapon_name = "c4";
@@ -444,17 +251,17 @@ void c_visuals::dropped_weapons(player_t* entity) noexcept {
 				weapon_icon = "r";
 			}
 		}
-		if (config_system.item.dropped_weapons && !strstr(model_name, "models/weapons/w_eq_")
-			&& !strstr(model_name, "models/weapons/w_ied")){
-			if (strstr(model_name, "models/weapons/w_") && strstr(model_name, "_dropped.mdl")){
-							
-				if (strstr(model_name, "models/weapons/w_rif_m4a1_s") && strstr(model_name, "_dropped.mdl")) {
-					weapon_name = "m4a1_s";
-					weapon_icon = "T";
-				}
+		if ((config_system.item.dropped_weapons || config_system.item.dropped_weapons_icon) && !strstr(model_name, "models/weapons/w_eq_")
+			&& !strstr(model_name, "models/weapons/w_ied")) {
+			if (strstr(model_name, "models/weapons/w_") && strstr(model_name, "_dropped.mdl")) {
+
 				if (strstr(model_name, "models/weapons/w_rif_m4a1") && strstr(model_name, "_dropped.mdl")) {
 					weapon_name = "m4a4";
 					weapon_icon = "S";
+				}
+				if (strstr(model_name, "models/weapons/w_rif_m4a1_s") && strstr(model_name, "_dropped.mdl")) {
+					weapon_name = "m4a1_s";
+					weapon_icon = "T";
 				}
 				if (strstr(model_name, "models/weapons/w_pist_223") && strstr(model_name, "_dropped.mdl")) {
 					weapon_name = "usp_s";
@@ -468,6 +275,10 @@ void c_visuals::dropped_weapons(player_t* entity) noexcept {
 					weapon_name = "cz75";
 					weapon_icon = "I";
 				}
+				if (strstr(model_name, "models/weapons/w_pist_deagle") && strstr(model_name, "_dropped.mdl")) {
+					weapon_name = "deagle";
+					weapon_icon = "A";
+				}
 				if (strstr(model_name, "models/weapons/w_pist_revolver") && strstr(model_name, "_dropped.mdl")) {
 					weapon_name = "revolver";
 					weapon_icon = "J";
@@ -480,10 +291,6 @@ void c_visuals::dropped_weapons(player_t* entity) noexcept {
 					weapon_name = "knife";
 					weapon_icon = "]";
 				}
-				if (class_id == class_ids::cdeagle) {
-					weapon_name = "deagle";
-					weapon_icon = "A";
-				}
 				if (class_id == class_ids::cweaponaug) {
 					weapon_name = "aug";
 					weapon_icon = "U";
@@ -492,7 +299,7 @@ void c_visuals::dropped_weapons(player_t* entity) noexcept {
 					weapon_name = "g3sg1";
 					weapon_icon = "X";
 				}
-				if (class_id == class_ids::cweaponmac10 ) {
+				if (class_id == class_ids::cweaponmac10) {
 					weapon_name = "mac10";
 					weapon_icon = "K";
 				}
@@ -595,11 +402,11 @@ void c_visuals::dropped_weapons(player_t* entity) noexcept {
 			}
 		}
 		int h_index = 0;
-		if (config_system.item.player_weapon) {
+		if (config_system.item.dropped_weapons){
 			render.draw_text(dropped_weapon_position.x, dropped_weapon_position.y + (10 * h_index), render.name_font, weapon_name.c_str(), true, color(255, 255, 255));
 			h_index++;
 		}
-		if (config_system.item.player_weapon_icon) {
+		if (config_system.item.dropped_weapons_icon) {
 			render.draw_text(dropped_weapon_position.x, dropped_weapon_position.y + (10 * h_index), render.icon_font, weapon_icon.c_str(), true, color(255, 255, 255));
 			h_index++;
 		}
@@ -846,7 +653,7 @@ void c_visuals::bomb_defuse_esp(player_t* entity) noexcept {
 	interfaces::engine->get_screen_size(width, height);
 
 	auto remaining_time = entity->c4_blow_time() - (interfaces::globals->interval_per_tick * local_player->get_tick_base());
-	auto countdown = entity->get_c4_defuse_countdown() - (local_player->get_tick_base() * interfaces::globals->interval_per_tick);
+	auto countdown = entity->c4_defuse_countdown() - (local_player->get_tick_base() * interfaces::globals->interval_per_tick);
 
 	char defuse_time_string[24];
 	sprintf_s(defuse_time_string, sizeof(defuse_time_string) - 1, "%.1f", countdown);
@@ -1172,107 +979,3 @@ void c_visuals::viewmodel_modulate(const model_render_info_t& info) {
 		}
 	}
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
