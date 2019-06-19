@@ -255,13 +255,13 @@ void c_visuals::dropped_weapons(player_t* entity) noexcept {
 			&& !strstr(model_name, "models/weapons/w_ied")) {
 			if (strstr(model_name, "models/weapons/w_") && strstr(model_name, "_dropped.mdl")) {
 			
-				if (strstr(model_name, "models/weapons/w_rif_m4a1_s") && strstr(model_name, "_dropped.mdl")) {
-					weapon_name = "m4a1_s";
-					weapon_icon = "T";
-				}
 				if (strstr(model_name, "models/weapons/w_rif_m4a1") && strstr(model_name, "_dropped.mdl")) {
 					weapon_name = "m4a4";
 					weapon_icon = "S";
+				}
+				if (strstr(model_name, "models/weapons/w_rif_m4a1_s") && strstr(model_name, "_dropped.mdl")) {
+					weapon_name = "m4a1_s";
+					weapon_icon = "T";
 				}
 				if (strstr(model_name, "models/weapons/w_pist_223") && strstr(model_name, "_dropped.mdl")) {
 					weapon_name = "usp_s";
