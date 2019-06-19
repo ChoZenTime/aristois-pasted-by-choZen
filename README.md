@@ -22,7 +22,6 @@ Full project files for **aristois**, Counter-Strike: Global Offensive cheat base
 + changed visual loop dropped weapon names now with  if visible function
 + changed weapon esp  to a cleaner code 
 + added dropped weapon with icons 
-+ changed code for weapon esp ,
 + changed weapon/hand/sleeve chams code
 + added check for bomb esp --> defused/exploded = bomb esp off
 + added menu so for woldesp is a switch for dropped weapon esp name/icon
