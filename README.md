@@ -29,7 +29,7 @@ Full project files for **aristois**, Counter-Strike: Global Offensive cheat base
 
 + + please make/use new configs so it dosen´t crash etc on you
 
-+ + + for weapon icon esp you need font --> astriumwep.ttf
++ + for weapon icon esp you need font --> astriumwep.ttf
 
 
 ## FAQ
