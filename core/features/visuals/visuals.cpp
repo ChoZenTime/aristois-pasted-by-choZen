@@ -754,14 +754,20 @@ void c_visuals::chams() noexcept {
 				if (utilities::is_behind_smoke(local_player->get_eye_pos(), entity->get_hitbox_position(entity, hitbox_head)) && config_system.item.vis_chams_smoke_check)
 					return;
 
-				if (config_system.item.vis_chams_type == 4)
+				if (config_system.item.vis_chams_type == 4) {
 					interfaces::render_view->modulate_color(life_color);
-				else
+					interfaces::render_view->set_blend(life_color[3]);
+					mat->set_material_var_flag(MATERIAL_VAR_IGNOREZ, false);
+					interfaces::model_render->override_material(textured);
+					entity->draw_model(1, 255);
+				}
+				else {
 					interfaces::render_view->modulate_color(config_system.item.clr_chams_vis);
-				interfaces::render_view->set_blend(config_system.item.clr_chams_vis[3]);
-				mat->set_material_var_flag(MATERIAL_VAR_IGNOREZ, false);
-				interfaces::model_render->override_material(mat);
-				entity->draw_model(1, 255);
+					interfaces::render_view->set_blend(config_system.item.clr_chams_vis[3]);
+					mat->set_material_var_flag(MATERIAL_VAR_IGNOREZ, false);
+					interfaces::model_render->override_material(mat);
+					entity->draw_model(1, 255);
+				}
 			}
 		}
 
