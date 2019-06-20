@@ -756,7 +756,7 @@ void c_visuals::chams() noexcept {
 
 				if (config_system.item.vis_chams_type == 4) {
 					interfaces::render_view->modulate_color(life_color);
-					interfaces::render_view->set_blend(life_color[3]);
+					interfaces::render_view->set_blend(config_system.item.clr_chams_vis[3]);
 					mat->set_material_var_flag(MATERIAL_VAR_IGNOREZ, false);
 					interfaces::model_render->override_material(textured);
 					entity->draw_model(1, 255);
