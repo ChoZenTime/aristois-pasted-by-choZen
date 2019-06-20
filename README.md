@@ -2,7 +2,7 @@
 # aristois-pasted-by-choZen   
 ##  thx too kuciak666 for [aristois](https://github.com/designer1337/aristois-legit)
 
-Full project files for **aristois**, Counter-Strike: Global Offensive cheat based on [alpha's sdk](https://github.com/alphauc/sdk).
+project files for **aristois**,  "Counter-Strike: Global Offensive" cheat based on [alpha's sdk](https://github.com/alphauc/sdk).
 
 ## Changelog
 + completed skinlist						
@@ -17,12 +17,18 @@ Full project files for **aristois**, Counter-Strike: Global Offensive cheat base
 + added ambient light						// thx smefs indigo 
 + added weapon/hand/sleeve chams			// thx tonti spuri
 + added trigger/damage inticator			// thx tonti spuri
-
 + tested/added nullptr for bt chams
++ added speclist with OBS modes
++ changed visual loop dropped weapon names now with  if visible function
++ changed weapon esp  to a cleaner code 
++ added dropped weapon with icons 
++ changed weapon/hand/sleeve chams code
++ added check for bomb esp --> defused/exploded = bomb esp off
++ added menu so for woldesp is a switch for dropped weapon esp name/icon
 
-++ please make/use new configs so it dosen´t crash etc on you
++ + please make/use new configs so it dosen´t crash etc on you
 
-+++ for weapon icon esp you need font --> astriumwep.ttf
++ + for weapon icon esp you need font --> astriumwep.ttf
 
 
 ## FAQ
@@ -42,6 +48,6 @@ Press `END` key.
 ![image](https://imgur.com/X5vQfY2.png)
 ![image](https://imgur.com/Yhqxk4z.png)
 ![image](https://imgur.com/W3sz6rE.png)
-
+![image](https://imgur.com/9b2oJM0.png)
   
 my nickname is choZen on UC , Void and YouGame
