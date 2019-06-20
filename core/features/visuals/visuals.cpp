@@ -723,13 +723,26 @@ void c_visuals::chams() noexcept {
 			break;
 		case 3:
 			mat = dogtag;
+			break;	
+		case 4:
 			break;
 		}
 
+		//needed for healthbased chams	
+		float life_color[3] = { 0.f };
+		float health = entity->health();
+		int red = 255 - (health * 2.55);
+		int green = health * 2.55;
+		life_color[0] = red / 255.f;
+		life_color[1] = green / 255.f;
+		life_color[2] = 0.f / 255.f;
+
 		if (is_enemy) {
+
 			if (config_system.item.vis_chams_invis) {
 				if (utilities::is_behind_smoke(local_player->get_eye_pos(), entity->get_hitbox_position(entity, hitbox_head)) && config_system.item.vis_chams_smoke_check)
 					return;
+
 				interfaces::render_view->modulate_color(config_system.item.clr_chams_invis);
 				interfaces::render_view->set_blend(config_system.item.clr_chams_invis[3]);
 				mat->set_material_var_flag(MATERIAL_VAR_IGNOREZ, true);
@@ -741,10 +754,12 @@ void c_visuals::chams() noexcept {
 				if (utilities::is_behind_smoke(local_player->get_eye_pos(), entity->get_hitbox_position(entity, hitbox_head)) && config_system.item.vis_chams_smoke_check)
 					return;
 
-				interfaces::render_view->modulate_color(config_system.item.clr_chams_vis);
+				if (config_system.item.vis_chams_type == 4)
+					interfaces::render_view->modulate_color(life_color);
+				else
+					interfaces::render_view->modulate_color(config_system.item.clr_chams_vis);
 				interfaces::render_view->set_blend(config_system.item.clr_chams_vis[3]);
 				mat->set_material_var_flag(MATERIAL_VAR_IGNOREZ, false);
-
 				interfaces::model_render->override_material(mat);
 				entity->draw_model(1, 255);
 			}
@@ -924,6 +939,8 @@ void c_visuals::skeleton(player_t* entity) noexcept {
 void c_visuals::backtrack_skeleton(player_t* entity) noexcept { 
 	if (!config_system.item.backtrack_skeleton)
 		return;
+
+
 }
 
 void c_visuals::backtrack_chams(IMatRenderContext* ctx, const draw_model_state_t& state, const model_render_info_t& info) {

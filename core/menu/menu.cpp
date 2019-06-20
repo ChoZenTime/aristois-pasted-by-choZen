@@ -410,7 +410,7 @@ void c_menu::run() {
 
 				ImGui::BeginChild("chams", ImVec2(279, 267), true); {
 					ImGui::PushStyleColor(ImGuiCol_Text, config_system.item.visuals_enabled ? ImVec4(1.f, 1.f, 1.f, 1) : ImVec4(.6f, .6f, .6f, 1));
-					ImGui::Combo("chams type", &config_system.item.vis_chams_type, "textured\0flat\0metallic\0pulsating");
+					ImGui::Combo("chams type", &config_system.item.vis_chams_type, "textured\0flat\0metallic\0pulsating\0life_color");
 					ImGui::PopStyleColor();
 					ImGui::Spacing();
 					ImGui::Checkbox("smoke check", &config_system.item.vis_chams_smoke_check);
@@ -1049,3 +1049,51 @@ void c_menu::run_visuals_preview() {
 
 	info.clear();
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
