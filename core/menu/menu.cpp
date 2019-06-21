@@ -919,7 +919,7 @@ void c_menu::run() {
 				ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(16, 16));
 
 				ImGui::BeginChild("settings", ImVec2(279, 267), true); {
-					ImGui::Combo("keybinds", &config_system.item.keybinds_selection, "edge jump\0aimbot key\0visuals key\0entity key");
+					ImGui::Combo("keybinds", &config_system.item.keybinds_selection, "edgejump\0aimbot\0visuals\0entity");
 
 					if (config_system.item.keybinds_selection == 0) {
 						ImGui::Hotkey("##edge jump key", &config_system.item.edge_jump_key, ImVec2(100, 20));
