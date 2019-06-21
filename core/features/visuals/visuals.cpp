@@ -26,8 +26,8 @@ void c_visuals::run() noexcept {
 		if (entity->team() == local_player->team() && !config_system.item.visuals_team_check)
 			continue;
 		
-		if (local_player->is_alive())
-			if (!local_player->can_see_player_pos(entity, entity->get_eye_pos()) && config_system.item.visuals_visible_only)
+		if (config_system.item.visuals_visible_only)
+			if (!local_player->can_see_player_pos(entity, entity->get_eye_pos()) && local_player->is_alive())
 				continue;
 
 		if (config_system.item.visuals_on_key && !GetAsyncKeyState(config_system.item.visuals_key))
@@ -63,8 +63,8 @@ void c_visuals::run() noexcept {
 				bomb_defuse_esp(entity);			
 			}
 			
-			if (local_player->is_alive())
-				if (!local_player->can_see_player_pos(entity, entity->get_eye_pos()) && config_system.item.visuals_visible_only)
+			if (config_system.item.entity_visible_only)
+				if (!local_player->can_see_player_pos(entity, entity->get_eye_pos()) && local_player->is_alive())
 					continue;
 
 			entity_esp(entity);
@@ -755,17 +755,17 @@ void c_visuals::chams() noexcept {
 				if (utilities::is_behind_smoke(local_player->get_eye_pos(), entity->get_hitbox_position(entity, hitbox_head)) && config_system.item.vis_chams_smoke_check)
 					return;
 
-				if (config_system.item.vis_chams_type == 4){
+				if (config_system.item.vis_chams_type == 4) {
 					interfaces::render_view->modulate_color(life_color);
 				}
 				else {
 					interfaces::render_view->modulate_color(config_system.item.clr_chams_vis);
 				}
-					interfaces::render_view->set_blend(config_system.item.clr_chams_vis[3]);
-					mat->set_material_var_flag(MATERIAL_VAR_IGNOREZ, false);
-					interfaces::model_render->override_material(mat);
-					entity->draw_model(1, 255);
-				}
+				interfaces::render_view->set_blend(config_system.item.clr_chams_vis[3]);
+				mat->set_material_var_flag(MATERIAL_VAR_IGNOREZ, false);
+				interfaces::model_render->override_material(mat);
+				entity->draw_model(1, 255);
+			}
 			
 		}
 
