@@ -930,7 +930,7 @@ void c_menu::run() {
 					else if (config_system.item.keybinds_selection == 2) {
 						ImGui::Hotkey("##visuals key", &config_system.item.visuals_key, ImVec2(100, 20));
 					}
-					else if (config_system.item.keybinds_selection == 2) {
+					else if (config_system.item.keybinds_selection == 3) {
 						ImGui::Hotkey("##entity key", &config_system.item.entity_visuals_key, ImVec2(100, 20));
 					}
 					
