@@ -67,6 +67,9 @@ void c_visuals::run() noexcept {
 				if (!local_player->can_see_player_pos(entity, entity->get_eye_pos()) && local_player->is_alive())
 					continue;
 
+			if (config_system.item.entity_visuals_on_key && !GetAsyncKeyState(config_system.item.entity_visuals_key))
+				continue;
+
 			entity_esp(entity);
 			dropped_weapons(entity);
 			projectiles(entity);

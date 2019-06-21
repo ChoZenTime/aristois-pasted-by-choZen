@@ -372,6 +372,8 @@ void c_menu::run() {
 						ImGui::Selectable(("danger zone"), &config_system.item.danger_zone_dropped, ImGuiSelectableFlags_::ImGuiSelectableFlags_DontClosePopups);
 						ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 4);
 						ImGui::Selectable(("vis only (lower fps)"), &config_system.item.entity_visible_only, ImGuiSelectableFlags_::ImGuiSelectableFlags_DontClosePopups);
+						ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 4);
+						ImGui::Selectable(("vis on key (lower fps)"), &config_system.item.entity_visuals_on_key, ImGuiSelectableFlags_::ImGuiSelectableFlags_DontClosePopups);
 						ImGui::EndCombo();
 					}
 					ImGui::PopStyleColor();
@@ -917,7 +919,7 @@ void c_menu::run() {
 				ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(16, 16));
 
 				ImGui::BeginChild("settings", ImVec2(279, 267), true); {
-					ImGui::Combo("keybinds", &config_system.item.keybinds_selection, "edge jump\0aimbot key\0visuals key");
+					ImGui::Combo("keybinds", &config_system.item.keybinds_selection, "edge jump\0aimbot key\0visuals key\0entity key");
 
 					if (config_system.item.keybinds_selection == 0) {
 						ImGui::Hotkey("##edge jump key", &config_system.item.edge_jump_key, ImVec2(100, 20));
@@ -927,6 +929,9 @@ void c_menu::run() {
 					}
 					else if (config_system.item.keybinds_selection == 2) {
 						ImGui::Hotkey("##visuals key", &config_system.item.visuals_key, ImVec2(100, 20));
+					}
+					else if (config_system.item.keybinds_selection == 2) {
+						ImGui::Hotkey("##entity key", &config_system.item.entity_visuals_key, ImVec2(100, 20));
 					}
 					
 				}

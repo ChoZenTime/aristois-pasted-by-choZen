@@ -264,6 +264,8 @@ public:
 		float clr_damage_indicator[4] = { 1.0f,1.0f,1.0f,255.0f };
 		bool dropped_weapons_icon{ false };
 		bool entity_visible_only{ false };
+		bool entity_visuals_on_key{ false };
+		int entity_visuals_key{ 0 };
 
 	} item;
 
