@@ -371,9 +371,10 @@ void c_menu::run() {
 						ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 4);
 						ImGui::Selectable(("danger zone"), &config_system.item.danger_zone_dropped, ImGuiSelectableFlags_::ImGuiSelectableFlags_DontClosePopups);
 						ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 4);
-						ImGui::Selectable(("vis only (lower fps)"), &config_system.item.entity_visible_only, ImGuiSelectableFlags_::ImGuiSelectableFlags_DontClosePopups);
+						ImGui::Selectable(("vis on key "), &config_system.item.entity_visuals_on_key, ImGuiSelectableFlags_::ImGuiSelectableFlags_DontClosePopups);
 						ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 4);
-						ImGui::Selectable(("vis on key (lower fps)"), &config_system.item.entity_visuals_on_key, ImGuiSelectableFlags_::ImGuiSelectableFlags_DontClosePopups);
+						ImGui::Selectable(("vis only (lower fps)"), &config_system.item.entity_visible_only, ImGuiSelectableFlags_::ImGuiSelectableFlags_DontClosePopups);
+						
 						ImGui::EndCombo();
 					}
 					ImGui::PopStyleColor();
