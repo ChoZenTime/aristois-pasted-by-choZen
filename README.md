@@ -25,6 +25,8 @@ project files for **aristois**,  "Counter-Strike: Global Offensive" cheat based 
 + changed weapon/hand/sleeve chams code
 + added check for bomb esp --> defused/exploded = bomb esp off
 + added menu so for woldesp is a switch for dropped weapon esp name/icon
++ added healthbased color chams
++ added dropped weapon es visible on key
 
 + + please make/use new configs so it dosen´t crash etc on you
 
@@ -49,5 +51,6 @@ Press `END` key.
 ![image](https://imgur.com/Yhqxk4z.png)
 ![image](https://imgur.com/W3sz6rE.png)
 ![image](https://imgur.com/9b2oJM0.png)
+![image](https://imgur.com/E8Je3D3.png)
   
 my nickname is choZen on UC , Void and YouGame
