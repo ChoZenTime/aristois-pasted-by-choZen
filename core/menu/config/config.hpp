@@ -99,7 +99,7 @@ public:
 		float clr_box[4]{ 1.0f,1.0f,1.0f,255.0f };
 		float clr_name[4]{ 1.0f,1.0f,1.0f,255.0f };
 		float clr_weapon[4]{ 1.0f,1.0f,1.0f,255.0f };
-		float clr_weapon_icon[4]{ 1.0f,1.0f,1.0f,255.0f };
+		float clr_weapon_drop[4]{ 1.0f,1.0f,1.0f,255.0f };
 		float clr_footstep[4]{ 1.0f,1.0f,1.0f,255.0f };
 		bool chams{ false };
 		bool remove_scope{ false };
@@ -281,6 +281,9 @@ public:
 		bool dropped_items_chams{ false };
 		bool viewmodel_chams{ false };
 		bool player_flags_reloading{ false };
+		bool projectiles_icon{ false };
+		bool visuals_enemy_check{ false };
+		bool health_chams_type{ false };
 
 	} item;
 

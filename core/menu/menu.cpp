@@ -269,25 +269,35 @@ void c_menu::run() {
 				ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0 / 255.f, 0 / 255.f, 0 / 255.f, 0.1f));
 
 				ImGui::BeginChild("player", ImVec2(279, 268), true); {
-					ImGui::Checkbox("- active -", &config_system.item.visuals_enabled);
-					if (config_system.item.visuals_enabled) {
-						ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 7);
-						ImGui::Checkbox(" teammate", &config_system.item.visuals_team_check);
-						ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 7);
-						ImGui::Checkbox(" visible only", &config_system.item.visuals_visible_only);
-						ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 7);
-						ImGui::Checkbox(" on key", &config_system.item.visuals_on_key);
+					ImGui::Checkbox("active", &config_system.item.visuals_enabled);
+					
+					ImGui::PushStyleColor(ImGuiCol_Text, config_system.item.visuals_enabled ? ImVec4(1.f, 1.f, 1.f, 1) : ImVec4(.6f, .6f, .6f, 1));
+					if (ImGui::BeginCombo("esp mode", "...", ImVec2(0, 105))) {
+						ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 8);
+						ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 4);
+						ImGui::Selectable(("enemy"), &config_system.item.visuals_enemy_check, ImGuiSelectableFlags_::ImGuiSelectableFlags_DontClosePopups);
+						ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 4);
+						ImGui::Selectable(("teammate"), &config_system.item.visuals_team_check, ImGuiSelectableFlags_::ImGuiSelectableFlags_DontClosePopups);
+						ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 4);
+						ImGui::Selectable(("visible only"), &config_system.item.visuals_visible_only, ImGuiSelectableFlags_::ImGuiSelectableFlags_DontClosePopups);
+						ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 4);
+						ImGui::Selectable(("visible on key"), &config_system.item.visuals_on_key, ImGuiSelectableFlags_::ImGuiSelectableFlags_DontClosePopups);
+						ImGui::EndCombo();
 					}
-					ImGui::Checkbox("name", &config_system.item.player_name);
-					ImGui::ColorEdit4("name color", config_system.item.clr_name, ImGuiColorEditFlags_NoInputs);
-					ImGui::Checkbox("box", &config_system.item.player_box);
-					ImGui::ColorEdit4("box color", config_system.item.clr_box, ImGuiColorEditFlags_NoInputs);
-					ImGui::Checkbox("health", &config_system.item.player_health);
-					ImGui::Checkbox("weapon name", &config_system.item.player_weapon);
+					ImGui::PopStyleColor();
+					
+					ImGui::PushStyleColor(ImGuiCol_Text, config_system.item.visuals_enabled ? ImVec4(1.f, 1.f, 1.f, 1) : ImVec4(.6f, .6f, .6f, 1));
+					if (ImGui::BeginCombo("weapon", "...", ImVec2(0, 105))) {
+						ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 8);
+						ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 4);
+						ImGui::Selectable(("weapon name"), &config_system.item.player_weapon, ImGuiSelectableFlags_::ImGuiSelectableFlags_DontClosePopups);
+						ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 4);
+						ImGui::Selectable(("weapon icon"), &config_system.item.player_weapon_icon, ImGuiSelectableFlags_::ImGuiSelectableFlags_DontClosePopups);
+						ImGui::EndCombo();
+					}
 					ImGui::ColorEdit4("weapon color", config_system.item.clr_weapon, ImGuiColorEditFlags_NoInputs);
-					ImGui::Checkbox("weapon icon", &config_system.item.player_weapon_icon);
-					ImGui::ColorEdit4("weapon icon color", config_system.item.clr_weapon_icon, ImGuiColorEditFlags_NoInputs);
-
+					ImGui::PopStyleColor();
+					
 					ImGui::PushStyleColor(ImGuiCol_Text, config_system.item.visuals_enabled ? ImVec4(1.f, 1.f, 1.f, 1) : ImVec4(.6f, .6f, .6f, 1));
 					if (ImGui::BeginCombo("flags", "...", ImVec2(0, 105))) {
 						ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 8);
@@ -306,17 +316,23 @@ void c_menu::run() {
 						ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 4);
 						ImGui::Selectable(("defusekit"), &config_system.item.player_flags_kit, ImGuiSelectableFlags_::ImGuiSelectableFlags_DontClosePopups);
 						ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 4);
-						ImGui::Selectable(("armor"), &config_system.item.player_flags_armor, ImGuiSelectableFlags_::ImGuiSelectableFlags_DontClosePopups);					
+						ImGui::Selectable(("armor"), &config_system.item.player_flags_armor, ImGuiSelectableFlags_::ImGuiSelectableFlags_DontClosePopups);
 						ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 4);
 						ImGui::Selectable(("money $$"), &config_system.item.player_flags_money, ImGuiSelectableFlags_::ImGuiSelectableFlags_DontClosePopups);
 
 						ImGui::EndCombo();
 					}
 					ImGui::PopStyleColor();
+	
+					ImGui::Checkbox("name", &config_system.item.player_name);
+					ImGui::ColorEdit4("name color", config_system.item.clr_name, ImGuiColorEditFlags_NoInputs);
+					ImGui::Checkbox("box", &config_system.item.player_box);
+					ImGui::ColorEdit4("box color", config_system.item.clr_box, ImGuiColorEditFlags_NoInputs);
+					ImGui::Checkbox("health", &config_system.item.player_health);	
 					ImGui::Checkbox("footstep", &config_system.item.sound_footstep);
 					ImGui::ColorEdit4("footstep color", config_system.item.clr_footstep, ImGuiColorEditFlags_NoInputs);
 					ImGui::Checkbox("skeleton", &config_system.item.skeleton);
-					ImGui::Checkbox("backtrack skeleton", &config_system.item.backtrack_skeleton);					
+					//ImGui::Checkbox("backtrack skeleton", &config_system.item.backtrack_skeleton);					
 					
 				}
 				ImGui::EndChild(true);
@@ -328,10 +344,7 @@ void c_menu::run() {
 
 				ImGui::BeginChild("effects", ImVec2(279, 267), true); {
 					ImGui::Checkbox("force crosshair", &config_system.item.force_crosshair);
-					ImGui::PushStyleColor(ImGuiCol_Text, config_system.item.visuals_enabled ? ImVec4(1.f, 1.f, 1.f, 1) : ImVec4(.6f, .6f, .6f, 1));
-					ImGui::SliderInt("viewmodel field of view", &config_system.item.viewmodel_fov, 0, 135);
-					ImGui::SliderInt("field of view", &config_system.item.fov, 0, 60);
-					ImGui::PopStyleColor();
+					
 					ImGui::Checkbox("ambient light", &config_system.item.ambient);
 					ImGui::ColorEdit4("ambient light color", config_system.item.clr_ambient, ImGuiColorEditFlags_NoInputs);
 					ImGui::Checkbox("- night mode -", &config_system.item.nightmode);
@@ -341,6 +354,31 @@ void c_menu::run() {
 					}
 
 					ImGui::PushStyleColor(ImGuiCol_Text, config_system.item.visuals_enabled ? ImVec4(1.f, 1.f, 1.f, 1) : ImVec4(.6f, .6f, .6f, 1));
+					if (ImGui::BeginCombo("world", "...", ImVec2(0, 105))) {
+						ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 8);
+						ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 4);
+						ImGui::Selectable(("planted bomb"), &config_system.item.bomb_planted, ImGuiSelectableFlags_::ImGuiSelectableFlags_DontClosePopups);
+						ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 4);
+						ImGui::Selectable(("dropped weapons name"), &config_system.item.dropped_weapons, ImGuiSelectableFlags_::ImGuiSelectableFlags_DontClosePopups);
+						ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 4);
+						ImGui::Selectable(("dropped weapons icon"), &config_system.item.dropped_weapons_icon, ImGuiSelectableFlags_::ImGuiSelectableFlags_DontClosePopups);
+						ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 4);
+						ImGui::Selectable(("projectiles name"), &config_system.item.projectiles, ImGuiSelectableFlags_::ImGuiSelectableFlags_DontClosePopups);
+						ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 4);
+						ImGui::Selectable(("projectiles icon"), &config_system.item.projectiles_icon, ImGuiSelectableFlags_::ImGuiSelectableFlags_DontClosePopups);
+						ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 4);
+						ImGui::Selectable(("misc entities"), &config_system.item.entity_esp, ImGuiSelectableFlags_::ImGuiSelectableFlags_DontClosePopups);
+						ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 4);
+						ImGui::Selectable(("danger zone"), &config_system.item.danger_zone_dropped, ImGuiSelectableFlags_::ImGuiSelectableFlags_DontClosePopups);
+						ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 4);
+						ImGui::Selectable(("visible on key "), &config_system.item.entity_visuals_on_key, ImGuiSelectableFlags_::ImGuiSelectableFlags_DontClosePopups);
+						ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 4);
+						ImGui::Selectable(("visible only (lower fps)"), &config_system.item.entity_visible_only, ImGuiSelectableFlags_::ImGuiSelectableFlags_DontClosePopups);
+
+						ImGui::EndCombo();
+					}
+					ImGui::ColorEdit4("weapon drop color", config_system.item.clr_weapon_drop, ImGuiColorEditFlags_NoInputs);
+
 					if (ImGui::BeginCombo("removals", "...", ImVec2(0, 105))) {
 						ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 8);
 						ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 4);
@@ -356,29 +394,12 @@ void c_menu::run() {
 						ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 4);
 						ImGui::Selectable(("scope overlay"), &config_system.item.remove_scope, ImGuiSelectableFlags_::ImGuiSelectableFlags_DontClosePopups);
 						ImGui::EndCombo();
-					}
+					}					
+					ImGui::PopStyleColor();
 
-					if (ImGui::BeginCombo("world", "...", ImVec2(0, 105))) {
-						ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 8);
-						ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 4);
-						ImGui::Selectable(("planted bomb"), &config_system.item.bomb_planted, ImGuiSelectableFlags_::ImGuiSelectableFlags_DontClosePopups);
-						ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 4);
-						ImGui::Selectable(("dropped weapons name"), &config_system.item.dropped_weapons, ImGuiSelectableFlags_::ImGuiSelectableFlags_DontClosePopups);
-						ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 4);
-						ImGui::Selectable(("dropped weapons icon"), &config_system.item.dropped_weapons_icon, ImGuiSelectableFlags_::ImGuiSelectableFlags_DontClosePopups);
-						ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 4);
-						ImGui::Selectable(("projectiles"), &config_system.item.projectiles, ImGuiSelectableFlags_::ImGuiSelectableFlags_DontClosePopups);
-						ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 4);
-						ImGui::Selectable(("misc entities"), &config_system.item.entity_esp, ImGuiSelectableFlags_::ImGuiSelectableFlags_DontClosePopups);
-						ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 4);
-						ImGui::Selectable(("danger zone"), &config_system.item.danger_zone_dropped, ImGuiSelectableFlags_::ImGuiSelectableFlags_DontClosePopups);
-						ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 4);
-						ImGui::Selectable(("vis on key "), &config_system.item.entity_visuals_on_key, ImGuiSelectableFlags_::ImGuiSelectableFlags_DontClosePopups);
-						ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 4);
-						ImGui::Selectable(("vis only (lower fps)"), &config_system.item.entity_visible_only, ImGuiSelectableFlags_::ImGuiSelectableFlags_DontClosePopups);
-						
-						ImGui::EndCombo();
-					}
+					ImGui::PushStyleColor(ImGuiCol_Text, config_system.item.visuals_enabled ? ImVec4(1.f, 1.f, 1.f, 1) : ImVec4(.6f, .6f, .6f, 1));
+					ImGui::SliderInt("viewmodel field of view", &config_system.item.viewmodel_fov, 0, 135);
+					ImGui::SliderInt("field of view", &config_system.item.fov, 0, 60);
 					ImGui::PopStyleColor();
 				}
 				ImGui::EndChild(true);
@@ -417,9 +438,10 @@ void c_menu::run() {
 
 				ImGui::BeginChild("chams", ImVec2(279, 267), true); {
 					ImGui::PushStyleColor(ImGuiCol_Text, config_system.item.visuals_enabled ? ImVec4(1.f, 1.f, 1.f, 1) : ImVec4(.6f, .6f, .6f, 1));
-					ImGui::Combo("chams type", &config_system.item.vis_chams_type, "textured\0flat\0metallic\0pulsating\0lifecolor");
+					ImGui::Combo("chams type", &config_system.item.vis_chams_type, "textured\0flat\0metallic\0pulsating");
 					ImGui::PopStyleColor();
 					ImGui::Spacing();
+					ImGui::Checkbox("health based color", & config_system.item.health_chams_type);
 					ImGui::Checkbox("smoke check", &config_system.item.vis_chams_smoke_check);
 					ImGui::Spacing();
 					ImGui::Checkbox("enemy", &config_system.item.vis_chams_vis);

@@ -22,10 +22,13 @@ void c_visuals::run() noexcept {
 
 		if (config_system.item.radar)
 			entity->spotted() = true;
+		
+		if (entity->team() != local_player->team() && !config_system.item.visuals_enemy_check)
+			continue;
 
 		if (entity->team() == local_player->team() && !config_system.item.visuals_team_check)
 			continue;
-		
+
 		if (config_system.item.visuals_visible_only)
 			if (!local_player->can_see_player_pos(entity, entity->get_eye_pos()) && local_player->is_alive())
 				continue;
@@ -95,6 +98,11 @@ void c_visuals::entity_esp(player_t* entity) noexcept {
 		if (!math.world_to_screen(entity_origin, entity_position))
 			return;
 
+		auto red = config_system.item.clr_weapon_drop[0] * 255;
+		auto green = config_system.item.clr_weapon_drop[1] * 255;
+		auto blue = config_system.item.clr_weapon_drop[2] * 255;
+		auto alpha = config_system.item.clr_weapon_drop[3] * 255;
+
 		std::string name = model->name_char_array, drop_name;
 		
 		if (name.find("dust_soccer_ball001") != std::string::npos) {
@@ -106,7 +114,7 @@ void c_visuals::entity_esp(player_t* entity) noexcept {
 		else if (client_class->class_id == class_ids::chostage) {
 			drop_name = "hostage";
 		}
-		render.draw_text(entity_position.x, entity_position.y, render.name_font, drop_name.c_str() , true, color(255, 255, 255));
+		render.draw_text(entity_position.x, entity_position.y, render.name_font, drop_name.c_str() , true, color(red, green, blue, alpha));
 	}
 }
 
@@ -204,10 +212,6 @@ void c_visuals::player_rendering(player_t* entity) noexcept {
 		auto red = config_system.item.clr_weapon[0] * 255;
 		auto green = config_system.item.clr_weapon[1] * 255;
 		auto blue = config_system.item.clr_weapon[2] * 255;
-
-		auto redi = config_system.item.clr_weapon_icon[0] * 255;
-		auto greeni = config_system.item.clr_weapon_icon[1] * 255;
-		auto bluei = config_system.item.clr_weapon_icon[2] * 255;
 	
 		auto weapon = entity->active_weapon();
 		if (!weapon)
@@ -219,7 +223,7 @@ void c_visuals::player_rendering(player_t* entity) noexcept {
 			h_index++;
 		}
 		if (config_system.item.player_weapon_icon) {
-			render.draw_text(bbox.x + (bbox.w / 2), bbox.h + (10 * h_index) + bbox.y + 2, render.icon_font, weapon->weapon_icon_definition().c_str(), true, color(redi, greeni, bluei, alpha[entity->index()]));
+			render.draw_text(bbox.x + (bbox.w / 2), bbox.h + (10 * h_index) + bbox.y + 2, render.icon_font, weapon->weapon_icon_definition().c_str(), true, color(red, green, blue, alpha[entity->index()]));
 			h_index++;
 		}
 	}
@@ -244,17 +248,22 @@ void c_visuals::dropped_weapons(player_t* entity) noexcept {
 			&& !strstr(model_name, "models/weapons/w_ied")) {
 			if (strstr(model_name, "models/weapons/w_") && strstr(model_name, "_dropped.mdl")) {
 				
+				auto red = config_system.item.clr_weapon_drop[0] * 255;
+				auto green = config_system.item.clr_weapon_drop[1] * 255;
+				auto blue = config_system.item.clr_weapon_drop[2] * 255;
+				auto alpha = config_system.item.clr_weapon_drop[3] * 255;
+
 				auto wpn = (weapon_t*)entity;
 				if (!wpn)
 					return;
 
 				int h_index = 0;
 				if (config_system.item.dropped_weapons) {
-					render.draw_text(dropped_weapon_position.x, dropped_weapon_position.y + (10 * h_index), render.name_font, wpn->weapon_name_definition().c_str(), true, color(255, 255, 255));
+					render.draw_text(dropped_weapon_position.x, dropped_weapon_position.y + (10 * h_index), render.name_font, wpn->weapon_name_definition().c_str(), true, color(red, green, blue,alpha));
 					h_index++;
 				}
 				if (config_system.item.dropped_weapons_icon) {
-					render.draw_text(dropped_weapon_position.x, dropped_weapon_position.y + (10 * h_index), render.icon_font, wpn->weapon_icon_definition().c_str(), true, color(255, 255, 255));
+					render.draw_text(dropped_weapon_position.x, dropped_weapon_position.y + (10 * h_index), render.icon_font, wpn->weapon_icon_definition().c_str(), true, color(red, green, blue, alpha));
 					h_index++;
 				}
 			}
@@ -386,24 +395,24 @@ void c_visuals::projectiles(player_t* entity) noexcept {
 			grenade_color = color(255, 255, 255);
 		}	
 		int h_index = 0;
-		if (config_system.item.player_weapon) {
+		if (config_system.item.projectiles) {
 			render.draw_text(grenade_position.x, grenade_position.y + (10 * h_index), render.name_font, grenade_name, true, grenade_color);
 			h_index++;
 		}
-		if (config_system.item.player_weapon_icon) {
+		if (config_system.item.projectiles_icon) {
 			render.draw_text(grenade_position.x, grenade_position.y + (10 * h_index), render.icon_font, grenade_icon, true, grenade_color);
 			h_index++;
 		}
+		if (config_system.item.projectiles || config_system.item.entity_esp)
+			if (name.find("smokegrenade") != std::string::npos) {
+				auto time = interfaces::globals->interval_per_tick * (interfaces::globals->tick_count - entity->smoke_grenade_tick_begin());
 
-		if (name.find("smokegrenade") != std::string::npos) {
-			auto time = interfaces::globals->interval_per_tick * (interfaces::globals->tick_count - entity->smoke_grenade_tick_begin());
-
-			if (!(18 - time < 0)) {
-				render.draw_filled_rect(grenade_position.x - 18, grenade_position.y + (10 * h_index), 36, 3, color(10, 10, 10, 180));
-				render.draw_filled_rect(grenade_position.x - 18, grenade_position.y + (10 * h_index), time * 2, 3, color(167, 24, 71, 255));
-				h_index++;
+				if (!(18 - time < 0)) {
+					render.draw_filled_rect(grenade_position.x - 18, grenade_position.y + (10 * h_index), 36, 3, color(10, 10, 10, 180));
+					render.draw_filled_rect(grenade_position.x - 18, grenade_position.y + (10 * h_index), time * 2, 3, color(167, 24, 71, 255));
+					h_index++;
+				}
 			}
-		}
 	}
 }
 
@@ -560,9 +569,6 @@ void c_visuals::chams() noexcept {
 	case 3:
 		mat = dogtag;
 		break;
-	case 4:
-		mat = textured;
-		break;
 	}
 
 	for (int i = 1; i <= interfaces::globals->max_clients; i++) {
@@ -588,8 +594,7 @@ void c_visuals::chams() noexcept {
 
 			if (config_system.item.vis_chams_invis) {
 				if (utilities::is_behind_smoke(local_player->get_eye_pos(), entity->get_hitbox_position(entity, hitbox_head)) && config_system.item.vis_chams_smoke_check)
-					return;
-
+					continue;
 				interfaces::render_view->modulate_color(config_system.item.clr_chams_invis);
 				interfaces::render_view->set_blend(config_system.item.clr_chams_invis[3]);
 				mat->set_material_var_flag(MATERIAL_VAR_IGNOREZ, true);
@@ -599,12 +604,12 @@ void c_visuals::chams() noexcept {
 			}
 			if (config_system.item.vis_chams_vis) {
 				if (utilities::is_behind_smoke(local_player->get_eye_pos(), entity->get_hitbox_position(entity, hitbox_head)) && config_system.item.vis_chams_smoke_check)
-					return;
+					continue;
 
-				if (config_system.item.vis_chams_type == 4) {
+				if (config_system.item.health_chams_type) {
 					interfaces::render_view->modulate_color(life_color);
 				}
-				else {
+				else if (!config_system.item.health_chams_type) {
 					interfaces::render_view->modulate_color(config_system.item.clr_chams_vis);
 				}
 				interfaces::render_view->set_blend(config_system.item.clr_chams_vis[3]);
@@ -670,6 +675,13 @@ void c_visuals::chams() noexcept {
 			case class_ids::cdecoyprojectile:
 			case class_ids::csmokegrenade:
 			case class_ids::csmokegrenadeprojectile:
+			case class_ids::particlesmokegrenade:
+			case class_ids::cbasecsgrenade:
+			case class_ids::cbasecsgrenadeprojectile:
+			case class_ids::cbasegrenade:
+			case class_ids::cbaseparticleentity:
+			case class_ids::csensorgrenade:
+			case class_ids::csensorgrenadeprojectile:
 				if (config_system.item.dropped_grenade_chams_xqz) {
 					interfaces::render_view->set_blend(config_system.item.clr_dropped_grenade_chams_xqz[3]);
 					interfaces::render_view->modulate_color(config_system.item.clr_dropped_grenade_chams_xqz);
@@ -819,6 +831,13 @@ void c_visuals::glow() noexcept {
 		case class_ids::cdecoyprojectile:
 		case class_ids::csmokegrenade:
 		case class_ids::csmokegrenadeprojectile:
+		case class_ids::particlesmokegrenade:
+		case class_ids::cbasecsgrenade:
+		case class_ids::cbasecsgrenadeprojectile:
+		case class_ids::cbasegrenade:
+		case class_ids::cbaseparticleentity:
+		case class_ids::csensorgrenade:
+		case class_ids::csensorgrenadeprojectile:
 			if (config_system.item.visuals_glow_nades) {
 				glow.set(config_system.item.clr_glow_dropped_nade[0], config_system.item.clr_glow_dropped_nade[1], config_system.item.clr_glow_dropped_nade[2], config_system.item.clr_glow_dropped_nade[3]);
 			}
