@@ -79,11 +79,11 @@ void c_glovechanger::run() noexcept {
 		
 		//credit to namazso for nskinz
 	
-		UINT* const wearables = local_player->get_wearables();
+		uintptr_t* const wearables = local_player->get_wearables();
 		if (!wearables)
 			return;
 
-		static UINT glove_handle = UINT(0);
+		static uintptr_t glove_handle = uintptr_t(0);
 		
 		auto glove = reinterpret_cast<attributable_item_t*>(interfaces::entity_list->get_client_entity_handle(wearables[0]));
 		

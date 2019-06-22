@@ -266,6 +266,21 @@ public:
 		bool entity_visible_only{ false };
 		bool entity_visuals_on_key{ false };
 		int entity_visuals_key{ 0 };
+		bool dropped_weapon_chams{ false };
+		float clr_dropped_weapon_chams[4]{ 1.0f,1.0f,1.0f,255.0f };
+		bool dropped_weapon_chams_xqz{ false };
+		float clr_dropped_weapon_chams_xqz[4]{ 1.0f,1.0f,1.0f,255.0f };	
+		bool planted_c4_chams{ false };
+		float clr_planted_c4_chams[4]{ 1.0f,1.0f,1.0f,255.0f };
+		bool planted_c4_chams_xqz{ false };
+		float clr_planted_c4_chams_xqz[4]{ 1.0f,1.0f,1.0f,255.0f };	
+		bool dropped_grenade_chams{ false };
+		float clr_dropped_grenade_chams[4]{ 1.0f,1.0f,1.0f,255.0f };
+		bool dropped_grenade_chams_xqz{ false };
+		float clr_dropped_grenade_chams_xqz[4]{ 1.0f,1.0f,1.0f,255.0f };
+		bool dropped_items_chams{ false };
+		bool viewmodel_chams{ false };
+		bool player_flags_reloading{ false };
 
 	} item;
 

@@ -151,20 +151,20 @@ void c_menu::run() {
 				ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(16, 16));
 
 				ImGui::BeginChild("extras", ImVec2(279, 267), true); {
-					ImGui::Checkbox("backtrack", &config_system.item.backtrack);
+					ImGui::Checkbox("- backtrack -", &config_system.item.backtrack);
 					ImGui::PushStyleColor(ImGuiCol_Text, config_system.item.backtrack ? ImVec4(1.f, 1.f, 1.f, 1) : ImVec4(.6f, .6f, .6f, 1));
 					if (config_system.item.backtrack) {
-						ImGui::SliderFloat("records (ms)", &config_system.item.backtrack_ms, 1.0f, 200.0f, "%.2f");
+						ImGui::SliderFloat(" records (ms)", &config_system.item.backtrack_ms, 1.0f, 200.0f, "%.2f");
 					}
-					ImGui::Checkbox("standalone rcs", &config_system.item.rcs_standalone);
+					ImGui::Checkbox("- standalone rcs -", &config_system.item.rcs_standalone);
 					if (config_system.item.rcs_standalone) {
 						ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 10);
-						ImGui::SliderFloat("rcs amount x", &config_system.item.rcs_standalone_x, 0.0f, 1.0f, "%.2f");
+						ImGui::SliderFloat(" rcs amount x", &config_system.item.rcs_standalone_x, 0.0f, 1.0f, "%.2f");
 						ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 10);
-						ImGui::SliderFloat("rcs amount y", &config_system.item.rcs_standalone_y, 0.0f, 1.0f, "%.2f");
+						ImGui::SliderFloat(" rcs amount y", &config_system.item.rcs_standalone_y, 0.0f, 1.0f, "%.2f");
 						ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 10);
 					}
-					ImGui::Checkbox("triggerbot", &config_system.item.trigger_enable);
+					ImGui::Checkbox("- triggerbot -", &config_system.item.trigger_enable);
 					if (config_system.item.trigger_enable) {
 						ImGui::Hotkey("##triger key", &config_system.item.trigger_key, ImVec2(100, 20));
 						ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 10);
@@ -182,9 +182,9 @@ void c_menu::run() {
 							ImGui::EndCombo();
 							ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 10);
 						}
-						ImGui::SliderInt("trigger delay", &config_system.item.trigger_delay, 1, 50);
+						ImGui::SliderInt(" trigger delay", &config_system.item.trigger_delay, 1, 50);
 						ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 10);
-						ImGui::Checkbox("trigger recoil", &config_system.item.trigger_recoil);
+						ImGui::Checkbox(" trigger recoil", &config_system.item.trigger_recoil);
 						ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 10);
 					}
 					ImGui::PopStyleColor();
@@ -269,14 +269,14 @@ void c_menu::run() {
 				ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0 / 255.f, 0 / 255.f, 0 / 255.f, 0.1f));
 
 				ImGui::BeginChild("player", ImVec2(279, 268), true); {
-					ImGui::Checkbox("active", &config_system.item.visuals_enabled);
+					ImGui::Checkbox("- active -", &config_system.item.visuals_enabled);
 					if (config_system.item.visuals_enabled) {
 						ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 7);
-						ImGui::Checkbox("teammate", &config_system.item.visuals_team_check);
+						ImGui::Checkbox(" teammate", &config_system.item.visuals_team_check);
 						ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 7);
-						ImGui::Checkbox("visible only", &config_system.item.visuals_visible_only);
+						ImGui::Checkbox(" visible only", &config_system.item.visuals_visible_only);
 						ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 7);
-						ImGui::Checkbox("on key", &config_system.item.visuals_on_key);
+						ImGui::Checkbox(" on key", &config_system.item.visuals_on_key);
 					}
 					ImGui::Checkbox("name", &config_system.item.player_name);
 					ImGui::ColorEdit4("name color", config_system.item.clr_name, ImGuiColorEditFlags_NoInputs);
@@ -295,6 +295,8 @@ void c_menu::run() {
 						ImGui::Selectable(("bombcarrier"), &config_system.item.player_flags_c4, ImGuiSelectableFlags_::ImGuiSelectableFlags_DontClosePopups);
 						ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 4);
 						ImGui::Selectable(("is flashed"), &config_system.item.player_flags_flashed, ImGuiSelectableFlags_::ImGuiSelectableFlags_DontClosePopups);
+						ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 4);
+						ImGui::Selectable(("is reloading"), &config_system.item.player_flags_reloading, ImGuiSelectableFlags_::ImGuiSelectableFlags_DontClosePopups);
 						ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 4);
 						ImGui::Selectable(("is scoped"), &config_system.item.player_flags_scoped, ImGuiSelectableFlags_::ImGuiSelectableFlags_DontClosePopups);
 						ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 4);
@@ -332,10 +334,10 @@ void c_menu::run() {
 					ImGui::PopStyleColor();
 					ImGui::Checkbox("ambient light", &config_system.item.ambient);
 					ImGui::ColorEdit4("ambient light color", config_system.item.clr_ambient, ImGuiColorEditFlags_NoInputs);
-					ImGui::Checkbox("night mode", &config_system.item.nightmode);
+					ImGui::Checkbox("- night mode -", &config_system.item.nightmode);
 					ImGui::ColorEdit4("sky color", config_system.item.clr_sky, ImGuiColorEditFlags_NoInputs);
 					if (config_system.item.nightmode) {
-						ImGui::SliderInt("brightness", &config_system.item.nightmode_brightness, 0, 100);
+						ImGui::SliderInt(" brightness", &config_system.item.nightmode_brightness, 0, 100);
 					}
 
 					ImGui::PushStyleColor(ImGuiCol_Text, config_system.item.visuals_enabled ? ImVec4(1.f, 1.f, 1.f, 1) : ImVec4(.6f, .6f, .6f, 1));
@@ -429,16 +431,38 @@ void c_menu::run() {
 					ImGui::ColorEdit4("teammate color", config_system.item.clr_chams_vis_teammate, ImGuiColorEditFlags_NoInputs);
 					ImGui::Checkbox("teammate (behind wall)", &config_system.item.vis_chams_invis_teammate);
 					ImGui::ColorEdit4("teammate (behind wall) color", config_system.item.clr_chams_invis_teammate, ImGuiColorEditFlags_NoInputs);
-					
-					ImGui::Checkbox("weapon chams", &config_system.item.weapon_chams);
-					ImGui::ColorEdit4("weapon chams color", config_system.item.clr_weapon_chams, ImGuiColorEditFlags_NoInputs);
-					ImGui::Checkbox("hand chams", &config_system.item.hand_chams);
-					ImGui::ColorEdit4("hand chams color", config_system.item.clr_hand_chams, ImGuiColorEditFlags_NoInputs);
-					ImGui::Checkbox("sleeve chams", &config_system.item.sleeve_chams);
-					ImGui::ColorEdit4("sleeve chams color", config_system.item.clr_sleeve_chams, ImGuiColorEditFlags_NoInputs);
 					ImGui::Spacing();
 					ImGui::Checkbox("backtrack", &config_system.item.backtrack_visualize);
-			
+					ImGui::Spacing();
+					ImGui::Checkbox("- dropped items -", &config_system.item.dropped_items_chams);
+					if (config_system.item.dropped_items_chams) {
+
+						ImGui::Checkbox(" dropped weapon", &config_system.item.dropped_weapon_chams);
+						ImGui::ColorEdit4("dropped weapon color", config_system.item.clr_dropped_weapon_chams, ImGuiColorEditFlags_NoInputs);
+						ImGui::Checkbox(" dropped weapon (behind wall)", &config_system.item.dropped_weapon_chams_xqz);
+						ImGui::ColorEdit4("dropped weapon (behind wall) color", config_system.item.clr_dropped_weapon_chams_xqz, ImGuiColorEditFlags_NoInputs);
+
+						ImGui::Checkbox(" dropped grenade", &config_system.item.dropped_grenade_chams);
+						ImGui::ColorEdit4("dropped grenade color", config_system.item.clr_dropped_grenade_chams, ImGuiColorEditFlags_NoInputs);
+						ImGui::Checkbox(" dropped grenade (behind wall)", &config_system.item.dropped_grenade_chams_xqz);
+						ImGui::ColorEdit4("dropped grenade (behind wall) color", config_system.item.clr_dropped_grenade_chams_xqz, ImGuiColorEditFlags_NoInputs);
+
+						ImGui::Checkbox(" planted c4", &config_system.item.planted_c4_chams);
+						ImGui::ColorEdit4("planted c4 color", config_system.item.clr_planted_c4_chams, ImGuiColorEditFlags_NoInputs);
+						ImGui::Checkbox(" planted c4 (behind wall)", &config_system.item.planted_c4_chams_xqz);
+						ImGui::ColorEdit4("planted c4 (behind wall) color", config_system.item.clr_planted_c4_chams_xqz, ImGuiColorEditFlags_NoInputs);
+
+					}
+					
+					ImGui::Checkbox("- viewmodels -", &config_system.item.viewmodel_chams);
+					if (config_system.item.viewmodel_chams) {
+						ImGui::Checkbox(" weapon viewmodel", &config_system.item.weapon_chams);
+						ImGui::ColorEdit4("weapon viewmodel color", config_system.item.clr_weapon_chams, ImGuiColorEditFlags_NoInputs);
+						ImGui::Checkbox(" hand viewmodel", &config_system.item.hand_chams);
+						ImGui::ColorEdit4("hand viewmodel color", config_system.item.clr_hand_chams, ImGuiColorEditFlags_NoInputs);
+						ImGui::Checkbox(" sleeve viewmodel", &config_system.item.sleeve_chams);
+						ImGui::ColorEdit4("sleeve viewmodel color", config_system.item.clr_sleeve_chams, ImGuiColorEditFlags_NoInputs);
+					}							
 				}
 				ImGui::EndChild(true);
 
@@ -509,7 +533,7 @@ void c_menu::run() {
 				ImGui::NextColumn();
 
 				ImGui::BeginChild("movement", ImVec2(279, 543), true); {
-					ImGui::Checkbox("bunny hop", &config_system.item.bunny_hop);
+					ImGui::Checkbox("- bunny hop -", &config_system.item.bunny_hop);
 					if (config_system.item.bunny_hop) {
 						ImGui::SliderInt("hitchance", &config_system.item.bunny_hop_hitchance, 0, 100);
 						ImGui::SliderInt("minimum hops", &config_system.item.bunny_hop_minimum_value, 0, 20);
@@ -517,7 +541,7 @@ void c_menu::run() {
 					}
 
 
-					ImGui::Checkbox("edge jump", &config_system.item.edge_jump);
+					ImGui::Checkbox("- edge jump -", &config_system.item.edge_jump);
 					if (config_system.item.edge_jump) {
 						ImGui::Checkbox("duck in air", &config_system.item.edge_jump_duck_in_air);
 					}
@@ -540,14 +564,14 @@ void c_menu::run() {
 					ImGui::Spacing();
 					ImGui::Spacing();
 					ImGui::PushStyleColor(ImGuiCol_Text, config_system.item.skinchanger_enable ? ImVec4(1.f, 1.f, 1.f, 1) : ImVec4(.6f, .6f, .6f, 1));
-					ImGui::Combo("typ", &config_system.item.knife_model, "default\0bayonet\0m9\0karambit\0bowie\0butterfly\0falchion\0flip\0gut\0huntsman\0shaddow daggers\0navaja\0stiletto\0talon\0ursus");	
+					ImGui::Combo("typ", &config_system.item.knife_model, "default\0bayonet\0m9\0karambit\0bowie\0butterfly\0falchion\0flip\0gut\0huntsman\0shaddow-daggers\0navaja\0stiletto\0talon\0ursus");	
 					ImGui::Combo(("skin"), &config_system.item.paint_kit_vector_index_knife, [](void* data, int idx, const char** out_text) {
 						*out_text = parser_skins[idx].name.c_str();
 						return true;
 					}, nullptr, parser_skins.size(), 10);
 					config_system.item.paint_kit_index_knife = parser_skins[config_system.item.paint_kit_vector_index_knife].id;
 					ImGui::Spacing();
-					ImGui::Combo("condition", &config_system.item.knife_wear, "factory new\0minimal wear\0field-tested\0well-worn\0battle-scarred");
+					ImGui::Combo("condition", &config_system.item.knife_wear, "factory-new\0minimal-wear\0field-tested\0well-worn\0battle-scarred");
 					ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 18);
 					ImGui::Spacing();
 					ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 18);
@@ -569,14 +593,14 @@ void c_menu::run() {
 					ImGui::Spacing();
 					ImGui::Spacing();
 					ImGui::PushStyleColor(ImGuiCol_Text, config_system.item.glovechanger_enable ? ImVec4(1.f, 1.f, 1.f, 1) : ImVec4(.6f, .6f, .6f, 1));
-					ImGui::Combo("typ", &config_system.item.glove_model, "default\0blood\0sport\0slick\0leather\0moto\0specin\0hydra");
+					ImGui::Combo("typ", &config_system.item.glove_model, "default\0blood\0sport\0slick\0leather\0moto\0speci\0hydra");
 					ImGui::Combo(("skin"), &config_system.item.paint_kit_vector_index_glove, [](void* data, int idx, const char** out_text) {
 						*out_text = parser_gloves[idx].name.c_str();
 						return true;
 						}, nullptr, parser_gloves.size(), 10);
 					config_system.item.paint_kit_index_glove = parser_gloves[config_system.item.paint_kit_vector_index_glove].id;
 					ImGui::Spacing();
-					ImGui::Combo("condition", &config_system.item.glove_wear, "factory new\0minimal wear\0field-tested\0well-worn\0battle-scarred");
+					ImGui::Combo("condition", &config_system.item.glove_wear, "factory-new\0minimal-wear\0field-tested\0well-worn\0battle-scarred");
 					ImGui::Spacing();
 					ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 18);
 					if (ImGui::Button("force update", ImVec2(84, 18))) {

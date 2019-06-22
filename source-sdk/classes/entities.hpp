@@ -146,7 +146,22 @@ enum item_definition_indexes {
 	GLOVE_HYDRA = 5035
 };
 
-enum data_update_type_t {
+enum weapon_type : int
+{
+	WT_Invalid,
+	WT_Grenade,
+	WT_Knife,
+	WT_Misc,
+	WT_Pistol,
+	WT_Submg,
+	WT_Rifle,
+	WT_Sniper,
+	WT_Shotgun,
+	WT_Machinegun,
+	WT_Max
+};
+
+enum data_update_type {
 	DATA_UPDATE_CREATED = 0,
 	DATA_UPDATE_DATATABLE_CHANGED,
 };
@@ -209,12 +224,12 @@ public:
 	}
 	void set_angles(vec3_t angles) {
 		using original_fn = void(__thiscall*)(void*, const vec3_t&);
-		static original_fn set_angles_fn = (original_fn)((DWORD)utilities::pattern_scan(GetModuleHandleA("client_panorama.dll"), "55 8B EC 83 E4 F8 83 EC 64 53 56 57 8B F1"));
+		static original_fn set_angles_fn = (original_fn)((uintptr_t)utilities::pattern_scan(GetModuleHandleA("client_panorama.dll"), "55 8B EC 83 E4 F8 83 EC 64 53 56 57 8B F1"));
 		set_angles_fn(this, angles);
 	}
 	void set_position(vec3_t position) {
 		using original_fn = void(__thiscall*)(void*, const vec3_t&);
-		static original_fn set_position_fn = (original_fn)((DWORD)utilities::pattern_scan(GetModuleHandleA("client_panorama.dll"), "55 8B EC 83 E4 F8 51 53 56 57 8B F1 E8"));
+		static original_fn set_position_fn = (original_fn)((uintptr_t)utilities::pattern_scan(GetModuleHandleA("client_panorama.dll"), "55 8B EC 83 E4 F8 51 53 56 57 8B F1 E8"));
 		set_position_fn(this, position);
 	}
 	vec3_t &get_world_space_center() {
@@ -331,306 +346,298 @@ public:
 		return (*(original_fn**)this)[454](this); //skinchanger crash
 	}
 
-	auto* weapon_name_definition(){
-		switch (this->item_definition_index()) {
-		case item_definition_indexes::WEAPON_BAYONET:
-		case item_definition_indexes::WEAPON_KNIFE_FLIP:
-		case item_definition_indexes::WEAPON_KNIFE_GUT:
-		case item_definition_indexes::WEAPON_KNIFE_KARAMBIT:
-		case item_definition_indexes::WEAPON_KNIFE_M9_BAYONET:
-		case item_definition_indexes::WEAPON_KNIFE_TACTICAL:
-		case item_definition_indexes::WEAPON_KNIFE_FALCHION:
-		case item_definition_indexes::WEAPON_KNIFE_SURVIVAL_BOWIE:
-		case item_definition_indexes::WEAPON_KNIFE_BUTTERFLY:
-		case item_definition_indexes::WEAPON_KNIFE_PUSH:
-		case item_definition_indexes::WEAPON_KNIFE_URSUS:
-		case item_definition_indexes::WEAPON_KNIFE_GYPSY_JACKKNIFE:
-		case item_definition_indexes::WEAPON_KNIFE_STILETTO:
-		case item_definition_indexes::WEAPON_KNIFE_WIDOWMAKER:
-		case item_definition_indexes::WEAPON_KNIFE:
-		case item_definition_indexes::WEAPON_KNIFE_T:
-			return "knife";
-			break;
-		case item_definition_indexes::WEAPON_DEAGLE:
-			return "deagle";
-			break;
-		case item_definition_indexes::WEAPON_AUG:
-			return "aug";
-			break;
-		case item_definition_indexes::WEAPON_G3SG1:
-			return "g3sg1";
-			break;
-		case item_definition_indexes::WEAPON_MAC10:
-			return "mac10";
-			break;
-		case item_definition_indexes::WEAPON_P90:
-			return "p90";
-			break;
-		case item_definition_indexes::WEAPON_SSG08:
-			return "ssg08";
-			break;
-		case item_definition_indexes::WEAPON_SCAR20:
-			return "scar20";
-			break;
-		case item_definition_indexes::WEAPON_UMP45:
-			return "ump45";
-			break;
-		case item_definition_indexes::WEAPON_ELITE:
-			return "elite";
-			break;
-		case item_definition_indexes::WEAPON_FAMAS:
-			return "famas";
-			break;
-		case item_definition_indexes::WEAPON_FIVESEVEN:
-			return "fiveseven";
-			break;
-		case item_definition_indexes::WEAPON_GALILAR:
-			return "galilar";
-			break;
-		case item_definition_indexes::WEAPON_M4A1_SILENCER:
-			return "m4a1_s";
-			break;
-		case item_definition_indexes::WEAPON_M4A1:
-			return "m4a4";
-			break;
-		case item_definition_indexes::WEAPON_P250:
-			return "p250";
-			break;
-		case item_definition_indexes::WEAPON_M249:
-			return "m249";
-			break;
-		case item_definition_indexes::WEAPON_XM1014:
-			return "xm1014";
-			break;
-		case item_definition_indexes::WEAPON_GLOCK:
-			return "glock";
-			break;
-		case item_definition_indexes::WEAPON_USP_SILENCER:
-			return "usp_s";
-			break;
-		case item_definition_indexes::WEAPON_HKP2000:
-			return "p2000";
-			break;
-		case item_definition_indexes::WEAPON_AK47:
-			return "ak47";
-			break;
-		case item_definition_indexes::WEAPON_AWP:
-			return "awp";
-			break;
-		case item_definition_indexes::WEAPON_BIZON:
-			return "bizon";
-			break;
-		case item_definition_indexes::WEAPON_MAG7:
-			return "mag7";
-			break;
-		case item_definition_indexes::WEAPON_NEGEV:
-			return "negev";
-			break;
-		case item_definition_indexes::WEAPON_SAWEDOFF:
-			return "sawedoff";
-			break;
-		case item_definition_indexes::WEAPON_TEC9:
-			return "tec9";
-			break;
-		case item_definition_indexes::WEAPON_TASER:
-			return "zeus";
-			break;
-		case item_definition_indexes::WEAPON_NOVA:
-			return "nova";
-			break;
-		case item_definition_indexes::WEAPON_CZ75A:
-			return "cz75";
-			break;
-		case item_definition_indexes::WEAPON_SG556:
-			return "sg553";
-			break;
-		case item_definition_indexes::WEAPON_REVOLVER:
-			return "revolver";
-			break;
-		case item_definition_indexes::WEAPON_MP7:
-			return "mp7";
-			break;
-		case item_definition_indexes::WEAPON_MP9:
-			return "mp9";
-			break;
-		case item_definition_indexes::WEAPON_MP5SD:  //same icon as ump
-			return "mp5";
-			break;
-		case item_definition_indexes::WEAPON_C4:
-			return "c4";
-			break;
-		case item_definition_indexes::WEAPON_FRAG_GRENADE:
-			return "grenade";
-			break;
-		case item_definition_indexes::WEAPON_SMOKEGRENADE:
-			return "smoke";
-			break;
-		case item_definition_indexes::WEAPON_MOLOTOV:
-			return "fire_molo";
-			break;
-		case item_definition_indexes::WEAPON_INCGRENADE:
-			return "fire_inc";
-			break;
-		case item_definition_indexes::WEAPON_FLASHBANG:
-			return "flash";
-			break;
-		case item_definition_indexes::WEAPON_DECOY:
-			return "decoy";
-			break;
+	std::string weapon_name_definition() {
+		if (!this)
+			return ("");
+		int id = this->item_definition_index();
+		switch (id) {
+		case WEAPON_DEAGLE:
+			return ("deagle");
+		case WEAPON_AUG:
+			return ("aug");
+		case WEAPON_G3SG1:
+			return ("g3sg1");
+		case WEAPON_MAC10:
+			return ("mac10");
+		case WEAPON_P90:
+			return ("p90");
+		case WEAPON_SSG08:
+			return ("ssg08");
+		case WEAPON_SCAR20:
+			return ("scar20");
+		case WEAPON_UMP45:
+			return ("ump45");
+		case WEAPON_ELITE:
+			return ("elite");
+		case WEAPON_FAMAS:
+			return ("famas");
+		case WEAPON_FIVESEVEN:
+			return ("fiveseven");
+		case WEAPON_GALILAR:
+			return ("galilar");
+		case WEAPON_M4A1_SILENCER:
+			return ("m4a1_s");
+		case WEAPON_M4A1:
+			return ("m4a4");
+		case WEAPON_P250:
+			return ("p250");
+		case WEAPON_M249:
+			return ("m249");
+		case WEAPON_XM1014:
+			return ("xm1014");
+		case WEAPON_GLOCK:
+			return ("glock");
+		case WEAPON_USP_SILENCER:
+			return ("usp_s");
+		case WEAPON_HKP2000:
+			return ("p2000");
+		case WEAPON_AK47:
+			return ("ak47");
+		case WEAPON_AWP:
+			return ("awp");
+		case WEAPON_BIZON:
+			return ("bizon");
+		case WEAPON_MAG7:
+			return ("mag7");
+		case WEAPON_NEGEV:
+			return ("negev");
+		case WEAPON_SAWEDOFF:
+			return ("sawedoff");
+		case WEAPON_TEC9:
+			return ("tec9");
+		case WEAPON_TASER:
+			return ("zeus");
+		case WEAPON_NOVA:
+			return ("nova");
+		case WEAPON_CZ75A:
+			return ("cz75");
+		case WEAPON_SG556:
+			return ("sg553");
+		case WEAPON_REVOLVER:
+			return ("revolver");
+		case WEAPON_MP7:
+			return ("mp7");
+		case WEAPON_MP9:
+			return ("mp9");
+		case WEAPON_MP5SD:  //same icon as ump
+			return ("mp5");
+		case WEAPON_C4:
+			return ("c4");
+		case WEAPON_FRAG_GRENADE:
+			return ("grenade");
+		case WEAPON_SMOKEGRENADE:
+			return ("smoke");
+		case WEAPON_MOLOTOV:
+			return ("fire_molo");
+		case WEAPON_INCGRENADE:
+			return ("fire_inc");
+		case WEAPON_FLASHBANG:
+			return ("flash");
+		case WEAPON_DECOY:
+			return ("decoy");
+		default:
+			return ("knife");
 		}
-		return " ";
+		return ("");
 	}
 
-	auto* weapon_icon_definition(){
-		switch (this->item_definition_index()){
-		case item_definition_indexes::WEAPON_BAYONET:
-		case item_definition_indexes::WEAPON_KNIFE_FLIP:
-		case item_definition_indexes::WEAPON_KNIFE_GUT:
-		case item_definition_indexes::WEAPON_KNIFE_KARAMBIT:
-		case item_definition_indexes::WEAPON_KNIFE_M9_BAYONET:
-		case item_definition_indexes::WEAPON_KNIFE_TACTICAL:
-		case item_definition_indexes::WEAPON_KNIFE_FALCHION:
-		case item_definition_indexes::WEAPON_KNIFE_SURVIVAL_BOWIE:
-		case item_definition_indexes::WEAPON_KNIFE_BUTTERFLY:
-		case item_definition_indexes::WEAPON_KNIFE_PUSH:
-		case item_definition_indexes::WEAPON_KNIFE_URSUS:
-		case item_definition_indexes::WEAPON_KNIFE_GYPSY_JACKKNIFE:
-		case item_definition_indexes::WEAPON_KNIFE_STILETTO:
-		case item_definition_indexes::WEAPON_KNIFE_WIDOWMAKER:
-		case item_definition_indexes::WEAPON_KNIFE:
-			return "]";
-			break;
-		case item_definition_indexes::WEAPON_KNIFE_T:
-			return "[";
-			break;
-		case item_definition_indexes::WEAPON_DEAGLE:
-			return "A";
-			break;
-		case item_definition_indexes::WEAPON_AUG:
-			return "U";
-			break;
-		case item_definition_indexes::WEAPON_G3SG1:
-			return "X";
-			break;
-		case item_definition_indexes::WEAPON_MAC10:
-			return "K";
-			break;
-		case item_definition_indexes::WEAPON_P90:
-			return "P";
-			break;
-		case item_definition_indexes::WEAPON_SSG08:
-			return "a";
-			break;
-		case item_definition_indexes::WEAPON_SCAR20:
-			return "Y";
-			break;
-		case item_definition_indexes::WEAPON_UMP45:
-			return "L";
-			break;
-		case item_definition_indexes::WEAPON_ELITE:
-			return "B";
-			break;
-		case item_definition_indexes::WEAPON_FAMAS:
-			return "R";
-			break;
-		case item_definition_indexes::WEAPON_FIVESEVEN:
-			return "C";
-			break;
-		case item_definition_indexes::WEAPON_GALILAR:
-			return "Q";
-			break;
-		case item_definition_indexes::WEAPON_M4A1_SILENCER:
-			return "T";
-			break;
-		case item_definition_indexes::WEAPON_M4A1:
-			return "S";
-			break;
-		case item_definition_indexes::WEAPON_P250:
-			return "F";
-			break;
-		case item_definition_indexes::WEAPON_M249:
-			return "g";
-			break;
-		case item_definition_indexes::WEAPON_XM1014:
-			return "b";
-			break;
-		case item_definition_indexes::WEAPON_GLOCK:
-			return "D";
-			break;
-		case item_definition_indexes::WEAPON_USP_SILENCER:
-			return "G";
-			break;
-		case item_definition_indexes::WEAPON_HKP2000:
-			return "E";
-			break;
-		case item_definition_indexes::WEAPON_AK47:
-			return "W";
-			break;
-		case item_definition_indexes::WEAPON_AWP:
-			return "Z";
-			break;
-		case item_definition_indexes::WEAPON_BIZON:
-			return "M";
-			break;
-		case item_definition_indexes::WEAPON_MAG7:
-			return "d";
-			break;
-		case item_definition_indexes::WEAPON_NEGEV:
-			return "f";
-			break;
-		case item_definition_indexes::WEAPON_SAWEDOFF:
-			return "c";
-			break;
-		case item_definition_indexes::WEAPON_TEC9:
-			return "H";
-			break;
-		case item_definition_indexes::WEAPON_TASER:
-			return "h";
-			break;
-		case item_definition_indexes::WEAPON_NOVA:	
-			return "e";
-			break;
-		case item_definition_indexes::WEAPON_CZ75A:	
-			return "I";
-			break;
-		case item_definition_indexes::WEAPON_SG556:	
-			return "V";
-			break;
-		case item_definition_indexes::WEAPON_REVOLVER:	
-			return "J";
-			break;
-		case item_definition_indexes::WEAPON_MP7:
-			return "N";
-			break;
-		case item_definition_indexes::WEAPON_MP9:		
-			return "O";
-			break;
-		case item_definition_indexes::WEAPON_MP5SD:  //same icon as ump
-			return "L";
-			break;
-		case item_definition_indexes::WEAPON_C4:	
-			return "o";
-			break;
-		case item_definition_indexes::WEAPON_FRAG_GRENADE:
-			return "j";
-			break;
-		case item_definition_indexes::WEAPON_SMOKEGRENADE:
-			return "k";
-			break;
-		case item_definition_indexes::WEAPON_MOLOTOV:
-			return "l";
-			break;
-		case item_definition_indexes::WEAPON_INCGRENADE:
-			return "n";
-			break;
-		case item_definition_indexes::WEAPON_FLASHBANG:
-			return "i";
-			break;
-		case item_definition_indexes::WEAPON_DECOY:
-			return "m";
-			break;
+	std::string weapon_icon_definition() {
+		if (!this)
+			return ("");
+		int id = this->item_definition_index();
+		switch (id) {
+		case WEAPON_KNIFE_T:
+			return ("[");
+		case WEAPON_DEAGLE:
+			return ("A");
+		case WEAPON_AUG:
+			return ("U");
+		case WEAPON_G3SG1:
+			return ("X");
+		case WEAPON_MAC10:
+			return ("K");
+		case WEAPON_P90:
+			return ("P");
+		case WEAPON_SSG08:
+			return ("a");
+		case WEAPON_SCAR20:
+			return ("Y");
+		case WEAPON_UMP45:
+			return ("L");
+		case WEAPON_ELITE:
+			return ("B");
+		case WEAPON_FAMAS:
+			return ("R");
+		case WEAPON_FIVESEVEN:
+			return ("C");
+		case WEAPON_GALILAR:
+			return ("Q");
+		case WEAPON_M4A1_SILENCER:
+			return ("T");
+		case WEAPON_M4A1:
+			return ("S");
+		case WEAPON_P250:
+			return ("F");
+		case WEAPON_M249:
+			return ("g");
+		case WEAPON_XM1014:
+			return ("b");
+		case WEAPON_GLOCK:
+			return ("D");
+		case WEAPON_USP_SILENCER:
+			return ("G");
+		case WEAPON_HKP2000:
+			return ("E");
+		case WEAPON_AK47:
+			return ("W");
+		case WEAPON_AWP:
+			return ("Z");
+		case WEAPON_BIZON:
+			return ("M");
+		case WEAPON_MAG7:
+			return ("d");
+		case WEAPON_NEGEV:
+			return ("f");
+		case WEAPON_SAWEDOFF:
+			return ("c");
+		case WEAPON_TEC9:
+			return ("H");
+		case WEAPON_TASER:
+			return ("h");
+		case WEAPON_NOVA:
+			return ("e");
+		case WEAPON_CZ75A:
+			return ("I");
+		case WEAPON_SG556:
+			return ("V");
+		case WEAPON_REVOLVER:
+			return ("J");
+		case WEAPON_MP7:
+			return ("N");
+		case WEAPON_MP9:
+			return ("O");
+		case WEAPON_MP5SD:  //same icon as ump
+			return ("L");
+		case WEAPON_C4:
+			return ("o");
+		case WEAPON_FRAG_GRENADE:
+			return ("j");
+		case WEAPON_SMOKEGRENADE:
+			return ("k");
+		case WEAPON_MOLOTOV:
+			return ("l");
+		case WEAPON_INCGRENADE:
+			return ("n");
+		case WEAPON_FLASHBANG:
+			return ("i");
+		case WEAPON_DECOY:
+			return ("m");
+		default:
+			return ("]");
 		}
-		return " ";
+		return ("");
+	}
+	
+	int get_type(){
+		if (!this) return WT_Invalid;
+		int ID = this->item_definition_index();
+		switch (ID){
+		case WEAPON_DEAGLE:
+		case WEAPON_P250:
+		case WEAPON_USP_SILENCER:
+		case WEAPON_HKP2000:
+		case WEAPON_GLOCK:
+		case WEAPON_FIVESEVEN:
+		case WEAPON_TEC9:
+		case WEAPON_ELITE:
+		case WEAPON_REVOLVER:
+		case WEAPON_CZ75A:
+			return WT_Pistol;
+			break;
+		case WEAPON_MP9:
+		case WEAPON_MP7:
+		case WEAPON_UMP45:
+		case WEAPON_BIZON:
+		case WEAPON_P90:
+		case WEAPON_MAC10:
+			return WT_Submg;
+			break;
+		case WEAPON_BAYONET:
+		case WEAPON_KNIFE_SURVIVAL_BOWIE:
+		case WEAPON_KNIFE_BUTTERFLY:
+		case WEAPON_KNIFE:
+		case WEAPON_KNIFE_FALCHION:
+		case WEAPON_KNIFE_FLIP:
+		case WEAPON_KNIFE_GUT:
+		case WEAPON_KNIFE_KARAMBIT:
+		case WEAPON_KNIFE_M9_BAYONET:
+		case WEAPON_KNIFE_PUSH:
+		case WEAPON_KNIFE_TACTICAL:
+		case WEAPON_KNIFE_T:
+			return WT_Knife;
+			break;
+		case WEAPON_SAWEDOFF:
+		case WEAPON_XM1014:
+		case WEAPON_MAG7:
+		case WEAPON_NOVA:
+			return WT_Shotgun;
+		case WEAPON_M249:
+		case WEAPON_NEGEV:
+			return WT_Machinegun;
+		case WEAPON_TASER:
+		case WEAPON_C4:
+			return WT_Misc;
+			break;
+		case WEAPON_HEGRENADE:
+		case WEAPON_FLASHBANG:
+		case WEAPON_DECOY:
+		case WEAPON_SMOKEGRENADE:
+		case WEAPON_INCGRENADE:
+		case WEAPON_MOLOTOV:
+			return WT_Grenade;
+			break;
+		case WEAPON_AK47:
+		case WEAPON_M4A1:
+		case WEAPON_M4A1_SILENCER:
+		case WEAPON_GALILAR:
+		case WEAPON_FAMAS:
+		case WEAPON_AUG:
+		case WEAPON_SG556:
+			return WT_Rifle;
+			break;
+		case WEAPON_SCAR20:
+		case WEAPON_G3SG1:
+		case WEAPON_SSG08:
+		case WEAPON_AWP:
+			return WT_Sniper;
+			break;
+		default:
+			return WT_Knife;
+		}
+		return WT_Invalid;
+	}
+
+	bool is_empty()
+	{
+		int clip = *(int*)((DWORD)this + (netvar_manager::get_net_var(netvar_manager::fnv::hash("DT_BaseCombatWeapon"), netvar_manager::fnv::hash("m_iClip1"))));
+	
+		return clip == 0;
+	}
+
+	bool is_reloading()
+	{
+		if (!this)
+			return false;
+
+		auto type = get_type();
+
+		if (type == WT_Invalid || type == WT_Misc || type == WT_Grenade || type == WT_Knife)
+			return false;
+
+		if (!is_empty())
+			return false;
+
+		return true;
 	}
 };
 
@@ -687,7 +694,6 @@ public:
 
 	NETVAR("DT_SmokeGrenadeProjectile", "m_nSmokeEffectTickBegin", smoke_grenade_tick_begin, int);
 	
-
 	weapon_t* active_weapon() {
 		auto active_weapon = read<uintptr_t>(netvar_manager::get_net_var(netvar_manager::fnv::hash("DT_CSPlayer"), netvar_manager::fnv::hash("m_hActiveWeapon"))) & 0xFFF;
 		return reinterpret_cast<weapon_t*>(interfaces::entity_list->get_client_entity(active_weapon));
@@ -698,9 +704,8 @@ public:
 		return (char*)((uintptr_t)this + (netvar_manager::get_net_var(netvar_manager::fnv::hash("DT_BasePlayer"), netvar_manager::fnv::hash("m_szLastPlaceName"))));
 	}
 	
-	UINT* get_wearables()
-	{
-		return (UINT*)((uintptr_t)this + (netvar_manager::get_net_var(netvar_manager::fnv::hash("DT_CSPlayer"), netvar_manager::fnv::hash("m_hMyWearables"))));
+	uintptr_t* get_wearables() {
+		return (uintptr_t*)((uintptr_t)this + (netvar_manager::get_net_var(netvar_manager::fnv::hash("DT_CSPlayer"), netvar_manager::fnv::hash("m_hMyWearables"))));
 	}
 
 	bool has_c4() {
