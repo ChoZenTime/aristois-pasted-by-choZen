@@ -8,8 +8,8 @@ public:
 	void entity_esp(player_t* entity) noexcept;
 	void skeleton(player_t* entity) noexcept;
 	void backtrack_skeleton(player_t* entity) noexcept;
-	void backtrack_chams(IMatRenderContext* ctx, const draw_model_state_t& state, const model_render_info_t& info);
-	void viewmodel_modulate(const model_render_info_t& info);
+	void backtrack_chams(IMatRenderContext* ctx, const draw_model_state_t& state, const model_render_info_t& info)noexcept;
+	void viewmodel_modulate(const model_render_info_t& info)noexcept;
 	void chams() noexcept;
 	void chams_misc(const model_render_info_t& info) noexcept;
 	void glow() noexcept;
