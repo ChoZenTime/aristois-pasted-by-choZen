@@ -12,7 +12,7 @@ void c_visuals::run() noexcept {
 	auto local_player = reinterpret_cast<player_t*>(interfaces::entity_list->get_client_entity(interfaces::engine->get_local_player()));
 	if (!local_player)
 		return;
-	
+
 	//player drawing loop
 	for (int i = 1; i <= interfaces::globals->max_clients; i++) {
 		auto entity = reinterpret_cast<player_t*>(interfaces::entity_list->get_client_entity(i));
@@ -22,7 +22,7 @@ void c_visuals::run() noexcept {
 
 		if (config_system.item.radar)
 			entity->spotted() = true;
-		
+
 		if (entity->team() != local_player->team() && !config_system.item.visuals_enemy_check)
 			continue;
 
@@ -52,20 +52,20 @@ void c_visuals::run() noexcept {
 		skeleton(entity);
 		last_dormant[i] = entity->dormant();
 	}
-	
+
 	//non player drawing loop
 	for (int i = 0; i < interfaces::entity_list->get_highest_index(); i++) {
 		auto entity = reinterpret_cast<player_t*>(interfaces::entity_list->get_client_entity(i));
-		
+
 		if (entity && entity != local_player) {
 			auto client_class = entity->client_class();
 			auto model_name = interfaces::model_info->get_model_name(entity->model());
-		
-			if (client_class->class_id == class_ids::cplantedc4 && entity->c4_is_ticking() && !entity->c4_is_defused()) { 				
+
+			if (client_class->class_id == class_ids::cplantedc4 && entity->c4_is_ticking() && !entity->c4_is_defused()) {
 				bomb_esp(entity);
-				bomb_defuse_esp(entity);			
+				bomb_defuse_esp(entity);
 			}
-			
+
 			if (config_system.item.entity_visible_only)
 				if (!local_player->can_see_player_pos(entity, entity->get_eye_pos()) && local_player->is_alive())
 					continue;
@@ -80,7 +80,7 @@ void c_visuals::run() noexcept {
 	}
 }
 
-void c_visuals::entity_esp(player_t* entity) noexcept {
+void c_visuals::entity_esp(player_t * entity) noexcept {
 	if (!config_system.item.entity_esp || !entity || entity->dormant())
 		return;
 
@@ -104,7 +104,7 @@ void c_visuals::entity_esp(player_t* entity) noexcept {
 		auto alpha = config_system.item.clr_weapon_drop[3] * 255;
 
 		std::string name = model->name_char_array, drop_name;
-		
+
 		if (name.find("dust_soccer_ball001") != std::string::npos) {
 			drop_name = "soccer ball";
 		}
@@ -114,11 +114,11 @@ void c_visuals::entity_esp(player_t* entity) noexcept {
 		else if (client_class->class_id == class_ids::chostage) {
 			drop_name = "hostage";
 		}
-		render.draw_text(entity_position.x, entity_position.y, render.name_font, drop_name.c_str() , true, color(red, green, blue, alpha));
+		render.draw_text(entity_position.x, entity_position.y, render.name_font, drop_name.c_str(), true, color(red, green, blue, alpha));
 	}
 }
 
-void c_visuals::player_rendering(player_t* entity) noexcept {
+void c_visuals::player_rendering(player_t * entity) noexcept {
 	if ((entity->dormant() && alpha[entity->index()] == 0) && !config_system.item.player_dormant)
 		return;
 
@@ -143,11 +143,11 @@ void c_visuals::player_rendering(player_t* entity) noexcept {
 		box temp_bg(bbox.x - 5, bbox.y, 1, bbox.h);
 
 		// change the color depending on the entity health
-		auto health_color = color( ( 255 - entity->health() * 2.55 ), ( entity->health() * 2.55 ), 0, alpha[entity->index()] );
+		auto health_color = color((255 - entity->health() * 2.55), (entity->health() * 2.55), 0, alpha[entity->index()]);
 
 		// clamp health (custom maps, danger zone, etc)
-		if ( entity->health() > 100 )
-		    	health_color = color( 0, 255, 0 );
+		if (entity->health() > 100)
+			health_color = color(0, 255, 0);
 
 		//draw actual dynamic hp bar
 		render.draw_filled_rect(temp_bg.x - 1, temp_bg.y - 1, temp_bg.w + 2, temp_bg.h + 2, color(0, 0, 0, 25 + alpha[entity->index()]));
@@ -200,7 +200,7 @@ void c_visuals::player_rendering(player_t* entity) noexcept {
 		if (config_system.item.player_flags_pos && entity->get_callout())
 			flags.push_back(std::pair<std::string, color>(std::string(posi), color(0, 190, 90, alpha[entity->index()])));
 
-		
+
 		auto position = 0;
 		for (auto text : flags) {
 			render.draw_text(bbox.x + bbox.w + 3, bbox.y + position - 2, render.name_font, text.first, false, text.second);
@@ -212,7 +212,7 @@ void c_visuals::player_rendering(player_t* entity) noexcept {
 		auto red = config_system.item.clr_weapon[0] * 255;
 		auto green = config_system.item.clr_weapon[1] * 255;
 		auto blue = config_system.item.clr_weapon[2] * 255;
-	
+
 		auto weapon = entity->active_weapon();
 		if (!weapon)
 			return;
@@ -229,7 +229,7 @@ void c_visuals::player_rendering(player_t* entity) noexcept {
 	}
 }
 
-void c_visuals::dropped_weapons(player_t* entity) noexcept {
+void c_visuals::dropped_weapons(player_t * entity) noexcept {
 	auto class_id = entity->client_class()->class_id;
 	auto model_name = interfaces::model_info->get_model_name(entity->model());
 	auto weapon = entity;
@@ -243,11 +243,9 @@ void c_visuals::dropped_weapons(player_t* entity) noexcept {
 		return;
 
 	if (!(entity->origin().x == 0 && entity->origin().y == 0 && entity->origin().z == 0)) { //ghetto fix sorry - designer
-		
-		if ((config_system.item.dropped_weapons || config_system.item.dropped_weapons_icon) && !strstr(model_name, "models/weapons/w_eq_")
-			&& !strstr(model_name, "models/weapons/w_ied")) {
+
+		if (config_system.item.dropped_weapons || config_system.item.dropped_weapons_icon)
 			if (strstr(model_name, "models/weapons/w_") && strstr(model_name, "_dropped.mdl")) {
-				
 				auto red = config_system.item.clr_weapon_drop[0] * 255;
 				auto green = config_system.item.clr_weapon_drop[1] * 255;
 				auto blue = config_system.item.clr_weapon_drop[2] * 255;
@@ -259,7 +257,7 @@ void c_visuals::dropped_weapons(player_t* entity) noexcept {
 
 				int h_index = 0;
 				if (config_system.item.dropped_weapons) {
-					render.draw_text(dropped_weapon_position.x, dropped_weapon_position.y + (10 * h_index), render.name_font, wpn->weapon_name_definition().c_str(), true, color(red, green, blue,alpha));
+					render.draw_text(dropped_weapon_position.x, dropped_weapon_position.y + (10 * h_index), render.name_font, wpn->weapon_name_definition().c_str(), true, color(red, green, blue, alpha));
 					h_index++;
 				}
 				if (config_system.item.dropped_weapons_icon) {
@@ -267,7 +265,6 @@ void c_visuals::dropped_weapons(player_t* entity) noexcept {
 					h_index++;
 				}
 			}
-		}
 
 		if (config_system.item.danger_zone_dropped) { 	//no need to create separate func for danger zone shit - designer (also use switch instead of else if)
 			if (strstr(model_name, "case_pistol"))
@@ -342,10 +339,10 @@ void c_visuals::dropped_weapons(player_t* entity) noexcept {
 	}
 }
 
-void c_visuals::projectiles(player_t* entity) noexcept {
-	if (!config_system.item.projectiles)
+void c_visuals::projectiles(player_t * entity) noexcept {
+	if (!config_system.item.projectiles || !config_system.item.projectiles_icon)
 		return;
-	
+
 	auto client_class = entity->client_class();
 	auto model = entity->model();
 	if (!entity || !model)
@@ -358,12 +355,12 @@ void c_visuals::projectiles(player_t* entity) noexcept {
 		if (!model || !strstr(model->name_char_array, "thrown") && !strstr(model->name_char_array, "dropped"))
 			return;
 
-		std::string name = model->name_char_array,grenade_name, grenade_icon;
+		std::string name = model->name_char_array, grenade_name, grenade_icon;
 		grenade_origin = entity->origin();
 
 		if (!math.world_to_screen(grenade_origin, grenade_position))
 			return;
-		
+
 		if (name.find("fraggrenade") != std::string::npos) {
 			grenade_name = "grenade";
 			grenade_icon = "j";
@@ -393,7 +390,7 @@ void c_visuals::projectiles(player_t* entity) noexcept {
 			grenade_name = "decoy";
 			grenade_icon = "m";
 			grenade_color = color(255, 255, 255);
-		}	
+		}
 		int h_index = 0;
 		if (config_system.item.projectiles) {
 			render.draw_text(grenade_position.x, grenade_position.y + (10 * h_index), render.name_font, grenade_name, true, grenade_color);
@@ -403,7 +400,7 @@ void c_visuals::projectiles(player_t* entity) noexcept {
 			render.draw_text(grenade_position.x, grenade_position.y + (10 * h_index), render.icon_font, grenade_icon, true, grenade_color);
 			h_index++;
 		}
-		if (config_system.item.projectiles || config_system.item.entity_esp)
+		if (config_system.item.projectiles || config_system.item.projectiles_icon || config_system.item.entity_esp)
 			if (name.find("smokegrenade") != std::string::npos) {
 				auto time = interfaces::globals->interval_per_tick * (interfaces::globals->tick_count - entity->smoke_grenade_tick_begin());
 
@@ -416,7 +413,7 @@ void c_visuals::projectiles(player_t* entity) noexcept {
 	}
 }
 
-void c_visuals::bomb_esp(player_t* entity) noexcept {	
+void c_visuals::bomb_esp(player_t * entity) noexcept {
 	if (!config_system.item.bomb_planted)
 		return;
 
@@ -428,7 +425,7 @@ void c_visuals::bomb_esp(player_t* entity) noexcept {
 	auto remaining_time = explode_time - (interfaces::globals->interval_per_tick * local_player->get_tick_base());
 	if (remaining_time < 0)
 		return;
-	
+
 	int width, height;
 	interfaces::engine->get_screen_size(width, height);
 
@@ -471,7 +468,7 @@ void c_visuals::bomb_esp(player_t* entity) noexcept {
 
 	player_t* bomb = nullptr;
 	for (int i = 1; i < interfaces::entity_list->get_highest_index(); i++) {
-	
+
 		if (entity->client_class()->class_id == class_ids::cplantedc4) {
 			bomb = (player_t*)entity;
 			break;
@@ -499,7 +496,7 @@ void c_visuals::bomb_esp(player_t* entity) noexcept {
 	render.draw_filled_rect(bomb_position.x - c4_timer / 2, bomb_position.y + 13, explode_time, 3, color(167, 24, 71, 255));
 }
 
-void c_visuals::bomb_defuse_esp(player_t* entity) noexcept {
+void c_visuals::bomb_defuse_esp(player_t * entity) noexcept {
 	if (!config_system.item.bomb_planted)
 		return;
 
@@ -541,12 +538,12 @@ void c_visuals::bomb_defuse_esp(player_t* entity) noexcept {
 void c_visuals::chams() noexcept {
 	if (!config_system.item.visuals_enabled || (!config_system.item.vis_chams_vis && !config_system.item.vis_chams_invis))
 		return;
-	
+
 	auto local_player = reinterpret_cast<player_t*>(interfaces::entity_list->get_client_entity(interfaces::engine->get_local_player()));
 	if (!local_player)
 		return;
 
-	static i_material* mat = nullptr;
+	static i_material * mat = nullptr;
 	auto textured = interfaces::material_system->find_material("aristois_material", TEXTURE_GROUP_MODEL, true, nullptr);
 	auto metalic = interfaces::material_system->find_material("aristois_reflective", TEXTURE_GROUP_MODEL, true, nullptr);
 	auto flat = interfaces::material_system->find_material("debug/debugdrawflat", TEXTURE_GROUP_MODEL, true, nullptr);
@@ -578,8 +575,8 @@ void c_visuals::chams() noexcept {
 
 		bool is_teammate = entity->team() == local_player->team();
 		bool is_enemy = entity->team() != local_player->team();
-	
-		
+
+
 
 		//needed for healthbased chams	
 		float life_color[3] = { 0.f };
@@ -616,7 +613,7 @@ void c_visuals::chams() noexcept {
 				mat->set_material_var_flag(MATERIAL_VAR_IGNOREZ, false);
 				interfaces::model_render->override_material(mat);
 				entity->draw_model(1, 255);
-			}		
+			}
 		}
 
 		if (is_teammate) {
@@ -647,7 +644,7 @@ void c_visuals::chams() noexcept {
 			auto client_class = entity->client_class();
 			auto model_name = interfaces::model_info->get_model_name(entity->model());
 
-			switch (client_class->class_id) {	
+			switch (client_class->class_id) {
 			case class_ids::cplantedc4:
 			case class_ids::cbaseanimating:
 				if (config_system.item.planted_c4_chams_xqz) {
@@ -716,14 +713,14 @@ void c_visuals::chams() noexcept {
 					interfaces::model_render->override_material(mat);
 					entity->draw_model(1, 255);
 				}
-				
+
 			}
-			interfaces::model_render->override_material(nullptr);				
+			interfaces::model_render->override_material(nullptr);
 		}
 	}
 }
 
-void c_visuals::chams_misc(const model_render_info_t& info) noexcept {
+void c_visuals::chams_misc(const model_render_info_t & info) noexcept {
 
 	auto model_name = interfaces::model_info->get_model_name((model_t*)info.model);
 	if (!model_name)
@@ -753,7 +750,7 @@ void c_visuals::chams_misc(const model_render_info_t& info) noexcept {
 		mat = dogtag;
 		break;
 	}
-	
+
 	if (config_system.item.sleeve_chams && strstr(model_name, "sleeve")) {
 
 		interfaces::render_view->set_blend(config_system.item.clr_sleeve_chams[3]);
@@ -769,14 +766,14 @@ void c_visuals::chams_misc(const model_render_info_t& info) noexcept {
 		mat->set_material_var_flag(MATERIAL_VAR_IGNOREZ, false);
 		interfaces::model_render->override_material(mat);
 	}
-	if (config_system.item.weapon_chams && strstr(model_name, "models/weapons/v_") 
+	if (config_system.item.weapon_chams && strstr(model_name, "models/weapons/v_")
 		&& !strstr(model_name, "arms") && !strstr(model_name, "sleeve")) {
 
 		interfaces::render_view->set_blend(config_system.item.clr_weapon_chams[3]);
 		interfaces::render_view->modulate_color(config_system.item.clr_weapon_chams);
 		mat->set_material_var_flag(MATERIAL_VAR_IGNOREZ, false);
 		interfaces::model_render->override_material(mat);
-	}	
+	}
 	/*if (config_system.item.vis_chams_smoke_check && strstr(model_name, "models/player")) {
 		interfaces::render_view->set_blend(config_system.item.clr_dropped_weapon_chams[3]);
 		interfaces::render_view->modulate_color(config_system.item.clr_dropped_weapon_chams);
@@ -797,12 +794,12 @@ void c_visuals::glow() noexcept {
 		auto& glow = interfaces::glow_manager->objects[i];
 		if (glow.unused())
 			continue;
-		
+
 		auto glow_entity = reinterpret_cast<player_t*>(glow.entity);
 		auto client_class = glow_entity->client_class();
 		if (!glow_entity || glow_entity->dormant())
 			continue;
-		
+
 		auto is_enemy = glow_entity->team() != local_player->team();
 		auto is_teammate = glow_entity->team() == local_player->team();
 
@@ -853,7 +850,7 @@ void c_visuals::glow() noexcept {
 	}
 }
 
-void c_visuals::skeleton(player_t* entity) noexcept {
+void c_visuals::skeleton(player_t * entity) noexcept {
 	if (!config_system.item.skeleton)
 		return;
 
@@ -878,14 +875,14 @@ void c_visuals::skeleton(player_t* entity) noexcept {
 	}
 }
 
-void c_visuals::backtrack_skeleton(player_t* entity) noexcept { 
+void c_visuals::backtrack_skeleton(player_t * entity) noexcept {
 	if (!config_system.item.backtrack_skeleton)
 		return;
 
 
 }
 
-void c_visuals::backtrack_chams(IMatRenderContext* ctx, const draw_model_state_t& state, const model_render_info_t& info) {
+void c_visuals::backtrack_chams(IMatRenderContext * ctx, const draw_model_state_t & state, const model_render_info_t & info) noexcept {
 	if (!config_system.item.backtrack_visualize || !interfaces::engine->is_connected() && !interfaces::engine->is_in_game())
 		return;
 
@@ -913,17 +910,17 @@ void c_visuals::backtrack_chams(IMatRenderContext* ctx, const draw_model_state_t
 				}
 			}
 		}
-	
+
 }
 
-void c_visuals::viewmodel_modulate(const model_render_info_t& info) {
+void c_visuals::viewmodel_modulate(const model_render_info_t & info) noexcept {
 	if (!interfaces::engine->is_connected() && !interfaces::engine->is_in_game())
 		return;
 
 	auto model_name = interfaces::model_info->get_model_name((model_t*)info.model);
 
 	auto local_player = reinterpret_cast<player_t*>(interfaces::entity_list->get_client_entity(interfaces::engine->get_local_player()));
-	if (!local_player|| local_player->is_alive())
+	if (!local_player || local_player->is_alive())
 		return;
 
 	if (strstr(model_name, "sleeve")) {
