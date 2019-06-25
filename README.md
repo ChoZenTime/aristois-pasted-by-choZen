@@ -27,6 +27,7 @@ project files for **aristois**,  "Counter-Strike: Global Offensive" cheat based 
 + added menu so for woldesp is a switch for dropped weapon esp name/icon
 + added healthbased color chams
 + added dropped weapon es visible on key
++ added auto strafer
 
 + + please make/use new configs so it dosen´t crash etc on you
 
