@@ -25,6 +25,7 @@ public:
 	bool screen_transform(const vec3_t& point, vec3_t& screen);
 	bool world_to_screen(const vec3_t &origin, vec3_t &screen);
 	float distance_to_ray(vec3_t &pos, vec3_t &ray_start, vec3_t &ray_end, float *along = nullptr, vec3_t *point_on_ray = nullptr);
+	float normalize_angle(float angle);
 };
 
 extern c_math math;

@@ -265,3 +265,16 @@ float c_math::distance_to_ray(vec3_t &pos, vec3_t &ray_start, vec3_t &ray_end, f
 	return range;
 }
 
+float c_math::normalize_angle(float angle) {
+	if (angle > 180.f || angle < -180.f) {
+		auto revolutions = std::round(std::abs(angle / 360.f));
+
+		if (angle < 0.f)
+			angle = angle + 360.f * revolutions;
+		else
+			angle = angle - 360.f * revolutions;
+	}
+
+	return angle;
+}
+

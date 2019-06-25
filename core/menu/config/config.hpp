@@ -284,6 +284,7 @@ public:
 		bool projectiles_icon{ false };
 		bool visuals_enemy_check{ false };
 		bool health_chams_type{ false };
+		bool strafer{ false };
 
 	} item;
 

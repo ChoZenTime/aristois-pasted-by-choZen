@@ -157,6 +157,7 @@ bool __stdcall hooks::create_move(float frame_time, c_usercmd* user_cmd) {
 	if (interfaces::engine->is_connected() && interfaces::engine->is_in_game()) {		
 		//misc
 		movement.bunnyhop(user_cmd);
+		movement.strafe(user_cmd);
 		misc.clantag_spammer();
 		misc.viewmodel_offset();
 		misc.disable_post_processing();

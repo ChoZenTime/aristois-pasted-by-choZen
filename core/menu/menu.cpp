@@ -560,6 +560,8 @@ void c_menu::run() {
 						ImGui::SliderInt("hitchance", &config_system.item.bunny_hop_hitchance, 0, 100);
 						ImGui::SliderInt("minimum hops", &config_system.item.bunny_hop_minimum_value, 0, 20);
 						ImGui::SliderInt("maximum hops", &config_system.item.bunny_hop_maximum_value, 0, 20);
+
+						ImGui::Checkbox("auto strafer", &config_system.item.strafer);
 					}
 
 
